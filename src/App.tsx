@@ -3,19 +3,26 @@ import React, { useCallback, useState } from 'react'
 import './App.css'
 import { Mint } from "./mint"
 import { Sell } from "./sell"
-import { mockSdk } from "./mock-sdk"
 import { Fill } from "./fill"
+import { useSdk } from "./sdk/use-sdk"
+import { IRaribleSdk } from "@rarible/sdk/build/domain"
 
 const allTabs = ["mint", "sell", "bid", "fill"] as const
 type Tab = typeof allTabs[number]
 
 function App() {
 	const [tab, setTab] = useState<Tab>("mint")
+	const { sdk, connect, wallet } = useSdk("rinkeby")
+
+	if (!sdk || !wallet) {
+		return <div><button onClick={connect}>connect</button></div>
+	}
 
 	return (
 		<div className="App">
+			<div style={{paddingBottom: 10}}>Connected: {wallet.address}</div>
 			{allTabs.map(t => (<TabButton key={t} tab={t} selected={tab === t} selectTab={setTab}/>))}
-			<div style={{ paddingTop: 10 }}><SelectedTab tab={tab}/></div>
+			<div style={{ paddingTop: 10 }}><SelectedTab tab={tab} sdk={sdk}/></div>
 		</div>
 	)
 }
@@ -30,16 +37,16 @@ function TabButton(
 	return <button onClick={onClick} style={{ width: 100 }} disabled={selected}>{tab}</button>
 }
 
-function SelectedTab({ tab }: { tab: Tab }) {
+function SelectedTab({ tab, sdk }: { tab: Tab, sdk: IRaribleSdk }) {
 	switch (tab) {
 		case "bid":
-			return <Mint sdk={mockSdk}/>
+			return <Mint sdk={sdk}/>
 		case "fill":
-			return <Fill sdk={mockSdk}/>
+			return <Fill sdk={sdk}/>
 		case "mint":
-			return <Mint sdk={mockSdk}/>
+			return <Mint sdk={sdk}/>
 		case "sell":
-			return <Sell sdk={mockSdk}/>
+			return <Sell sdk={sdk}/>
 	}
 }
 

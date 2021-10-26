@@ -1728,10 +1728,10 @@
     jsbi "^3.2.5"
     tezos-sdk-module "^0.0.5"
 
-"@rarible/sdk-wallet@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@rarible/sdk-wallet/-/sdk-wallet-0.2.0.tgz#4e0400a707dfa03a809dd70a872aae85ba9d04fa"
-  integrity sha512-gBbKRW4Y0qBKDlkK4deRKaHmtLstn9nrejRpMXyEW2tpJu76oMXEe+Hnx1cg+uZHhIHjaVAZFmDhlUonapBNVg==
+"@rarible/sdk-wallet@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@rarible/sdk-wallet/-/sdk-wallet-0.2.2.tgz#321402a98d6a7dfe69bc339fdcde6ececc4c7870"
+  integrity sha512-hDeI+7MvNFCKPeIavwfD6wx7CbOMe3ou6UppJEDom9UM5T+i255ILQIKgEpisk6MlNBpGwHk84OEyhlCLSo4ag==
   dependencies:
     "@babel/runtime" "^7.15.4"
     "@rarible/api-client" "0.0.4"
@@ -1739,10 +1739,10 @@
     jsbi "^3.2.5"
     tezos-sdk-module "^0.0.5"
 
-"@rarible/sdk@0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@rarible/sdk/-/sdk-0.2.0.tgz#49e72af5b0719405b4c08ca2ea1bdac777900f09"
-  integrity sha512-0MrCfyQElClX2/S1mjK1OrApf/GFr2rdJTuTDGL7VAFNs9ykARncJqclvABEokRKMenwjMtNtrluxOXBwEPNQA==
+"@rarible/sdk@0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@rarible/sdk/-/sdk-0.2.2.tgz#999f98570b3828b437a2d0bcbdf5f75c6be5d8f5"
+  integrity sha512-CCFKfTIRW1VNvJNUEpRp39Pt/3/yjEyADKgl3GTaWDMG0Qmyia9MxHfDy4+Z1R3b6ElMZ8PS4yZWWWcgOYYZQg==
   dependencies:
     "@babel/runtime" "^7.15.4"
     "@ethereumjs/common" "2.5.0"
@@ -1752,7 +1752,7 @@
     "@rarible/ethereum-provider" "0.7.2"
     "@rarible/protocol-ethereum-sdk" "0.7.4"
     "@rarible/sdk-transaction" "^0.2.0"
-    "@rarible/sdk-wallet" "^0.2.0"
+    "@rarible/sdk-wallet" "^0.2.2"
     "@rarible/types" "^0.1.9"
     "@rarible/web3-ethereum" "^0.7.2"
     ajv "^8.6.3"
