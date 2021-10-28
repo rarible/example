@@ -1,10 +1,10 @@
-import { PrepareSellRequest } from "@rarible/sdk/build/order/sell/domain"
 import { useState } from "react"
 import { toItemId } from "@rarible/types"
 import { Input } from "../common/input"
 import { FormProps } from "../common/form-props"
+import { PrepareOrderRequest } from "@rarible/sdk/build/order/common"
 
-export function PrepareSellForm({ onSubmit }: FormProps<PrepareSellRequest>) {
+export function PrepareForm({ onSubmit }: FormProps<PrepareOrderRequest>) {
 	const [itemId, setItemId] = useState("")
 	return (
 		<div>
@@ -17,7 +17,7 @@ export function PrepareSellForm({ onSubmit }: FormProps<PrepareSellRequest>) {
 			</div>
 			<button onClick={() => onSubmit({ itemId: toItemId(itemId) })}>Submit</button>
 			<p>
-				Enter Item Id in the input and press Submit to sell item
+				Enter Item Id in the input and press Submit
 			</p>
 		</div>
 	)

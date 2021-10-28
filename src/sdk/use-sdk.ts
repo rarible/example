@@ -22,17 +22,17 @@ export function useSdk(env: string): UseSdkResult {
 	const wallet = useMemo(() => {
 		if (provider !== undefined && from !== undefined) {
 			const address = toUnionAddress(`ETHEREUM:${from}`)
-			return new EthereumWallet(new Web3Ethereum({ web3: new Web3(provider), from }), address, env as any)
+			return new EthereumWallet(new Web3Ethereum({ web3: new Web3(provider), from }), address)
 		} else {
 			return undefined
 		}
-	}, [env, provider, from])
+	}, [provider, from])
 	const sdk = useMemo(() => {
 		if (wallet !== undefined) {
-			return createRaribleSdk(wallet)
+			return createRaribleSdk(wallet, env as any)
 		} else {
 			return undefined
 		}
-	}, [wallet])
+	}, [env, wallet])
 	return { sdk, connect, wallet }
 }

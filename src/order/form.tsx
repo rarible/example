@@ -1,19 +1,19 @@
-import { PrepareSellResponse, SellRequest } from "@rarible/sdk/build/order/sell/domain"
 import { toBigNumber } from "@rarible/types"
 import { useState } from "react"
 import { EthEthereumAssetType } from "@rarible/api-client/build/models/AssetType"
 import { Input } from "../common/input"
 import { FormProps } from "../common/form-props"
+import { OrderRequest, PrepareOrderResponse } from "@rarible/sdk/build/order/common"
 
-type SellFormProps = FormProps<SellRequest> & {
-	response: PrepareSellResponse
+type SellFormProps = FormProps<OrderRequest> & {
+	response: PrepareOrderResponse
 }
 
 const ethCurrency: EthEthereumAssetType = {
 	"@type": "ETH",
 }
 
-export function SellForm({ onSubmit, response }: SellFormProps) {
+export function OrderForm({ onSubmit, response }: SellFormProps) {
 	const [price, setPrice] = useState<string>("")
 	const [amount, setAmount] = useState<string>("")
 	const error = validate(price, amount, response)
@@ -27,7 +27,7 @@ export function SellForm({ onSubmit, response }: SellFormProps) {
 				<Input value={amount} onChange={setAmount} placeholder="Amount"/>
 			</div>
 			<button
-				onClick={() => onSubmit({ amount: toBigNumber(amount), price: toBigNumber(price), currency: ethCurrency })}
+				onClick={() => onSubmit({ amount: parseInt(amount), price: toBigNumber(price), currency: ethCurrency })}
 				disabled={error !== undefined}
 			>Submit</button>
 			{error && <p style={{ color: "red" }}>{error}</p>}
@@ -35,7 +35,7 @@ export function SellForm({ onSubmit, response }: SellFormProps) {
 	)
 }
 
-function validate(price: string, amount: string, prepareResponse: PrepareSellResponse): string | undefined {
+function validate(price: string, amount: string, prepareResponse: PrepareOrderResponse): string | undefined {
 	const p = parseFloat(price)
 	if (isNaN(p)) {
 		return "price can not be parsed"
