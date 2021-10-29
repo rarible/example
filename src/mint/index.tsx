@@ -7,6 +7,7 @@ import { MintForm } from "./mint-form"
 export function Mint({ sdk }: { sdk: IRaribleSdk }) {
 	const prepare = useCallback(async (request: FixedPrepareMintRequest) => {
 		const collection = await sdk.apis.collection.getCollectionById({ collection: request.collectionId })
+		console.log("collection is", collection)
 		return sdk.nft.mint({ collection })
 	}, [sdk])
 

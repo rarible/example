@@ -17,10 +17,20 @@ export function Loader<Request, Response>(
 			.catch(setError)
 	}, [request, load])
 	if (error !== undefined) {
-		return <p style={{ color: "red" }}>{error}</p>
+		return <p style={{ color: "red" }}>{extractErrorString(error)}</p>
 	}
 	if (response === undefined) {
 		return <p>loading...</p>
 	}
 	return children(response)
+}
+
+function extractErrorString(error: any): string {
+	if (typeof error === "string") {
+		return error
+	} else if (error instanceof Error) {
+		return error.message
+	} else {
+		return `Unable to extract message from ${JSON.stringify(error)}`
+	}
 }
