@@ -1,12 +1,14 @@
 import { BlockchainWallet, EthereumWallet } from "@rarible/sdk-wallet"
 import { Maybe } from "../common/maybe"
-import { useEffect, useMemo } from "react"
-import { useInjectedProvider } from "./use-injected-provider"
+import { useCallback, useMemo } from "react"
 import { Web3Ethereum } from "@rarible/web3-ethereum"
 import Web3 from "web3"
-import { toUnionAddress } from "@rarible/types"
 import { createRaribleSdk } from "@rarible/sdk"
 import { IRaribleSdk } from "@rarible/sdk/build/domain"
+import { ConnectorImpl, MappedConnectionProvider } from "../connector"
+import { InjectedWeb3ConnectionProvider } from "../connector/injected"
+import { useConnector } from "../connector/use-connector"
+import { toUnionAddress } from "@rarible/types"
 
 type UseSdkResult = {
 	wallet: Maybe<BlockchainWallet>
@@ -14,19 +16,24 @@ type UseSdkResult = {
 	connect: () => void
 }
 
+const injected = MappedConnectionProvider.create(
+	new InjectedWeb3ConnectionProvider(),
+	wallet => ({ ...wallet, type: "ETHEREUM", address: toUnionAddress(`ETHEREUM:${wallet.address}`) }),
+)
+const connector = ConnectorImpl
+	.create(injected)
+
 export function useSdk(env: string): UseSdkResult {
-	const { provider, connect, account: from } = useInjectedProvider()
-	useEffect(() => {
-		console.log(`account: ${from}`)
-	}, [from])
+	const { connection, connect } = useConnector(connector)
 	const wallet = useMemo(() => {
-		if (provider !== undefined && from !== undefined) {
-			const address = toUnionAddress(`ETHEREUM:${from}`)
-			return new EthereumWallet(new Web3Ethereum({ web3: new Web3(provider), from }), address)
+		if (connection !== undefined && connection.status === "connected") {
+			const wallet = connection.connection
+			const from = wallet.address.substring("ETHEREUM:".length)
+			return new EthereumWallet(new Web3Ethereum({ web3: new Web3(wallet.provider), from }), wallet.address)
 		} else {
 			return undefined
 		}
-	}, [provider, from])
+	}, [connection])
 	const sdk = useMemo(() => {
 		if (wallet !== undefined) {
 			return createRaribleSdk(wallet, env as any)
@@ -34,5 +41,6 @@ export function useSdk(env: string): UseSdkResult {
 			return undefined
 		}
 	}, [env, wallet])
-	return { sdk, connect, wallet }
+	const connectInjected = useCallback(() => connect({ provider: injected, option: "injected" }), [connect])
+	return { sdk, connect: connectInjected, wallet }
 }
