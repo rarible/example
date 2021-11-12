@@ -1,6 +1,7 @@
-import { combineLatest, from, Observable } from "rxjs"
+import { combineLatest, defer, from, Observable } from "rxjs"
 import { map, mergeMap, startWith } from "rxjs/operators"
-import type { ConnectionProvider, ConnectionState } from "./provider"
+import type { ConnectionProvider, ConnectionState } from "../provider"
+import { Maybe } from "../../common/maybe"
 
 export type EthereumWallet = {
 	provider: any
@@ -13,7 +14,8 @@ export class InjectedWeb3ConnectionProvider implements ConnectionProvider<"injec
 	readonly connection: Observable<ConnectionState<EthereumWallet>>
 
 	constructor() {
-		this.connection = promiseToObservable(getWalletAsync()).pipe(
+		this.connection = defer(() => from(connect())).pipe(
+			mergeMap(() => promiseToObservable(getWalletAsync())),
 			map(wallet => {
 				if (wallet) {
 					return { status: "connected" as const, connection: wallet }
@@ -25,14 +27,14 @@ export class InjectedWeb3ConnectionProvider implements ConnectionProvider<"injec
 		)
 	}
 
-	get options(): Promise<"injected"[]> {
+	get option(): Promise<Maybe<"injected">> {
 		//todo handle injected provider types (find out what exact provider is used)
 		// metamask, dapper etc
 		const provider = getInjectedProvider()
 		if (provider !== undefined) {
-			return Promise.resolve(["injected"])
+			return Promise.resolve("injected")
 		} else {
-			return Promise.resolve([])
+			return Promise.resolve(undefined)
 		}
 	}
 
@@ -48,12 +50,16 @@ export class InjectedWeb3ConnectionProvider implements ConnectionProvider<"injec
 			return Promise.resolve(false)
 		}
 	}
+}
 
-	connect(): void {
-		const provider = getInjectedProvider()
-		if (provider) {
-			enableProvider(provider).then()
-		}
+async function connect(): Promise<void> {
+	const provider = getInjectedProvider()
+	if (!provider) {
+		throw new Error("Injected provider not available")
+	}
+	const accounts = await getAccounts(provider)
+	if (!accounts || accounts.length === 0) {
+		await enableProvider(provider)
 	}
 }
 
@@ -100,7 +106,7 @@ function getAddress(provider: any): Observable<string | undefined> {
 		provider,
 		getAccounts,
 		([account]) => account,
-		"accountsChanged"
+		"accountsChanged",
 	)
 }
 
@@ -109,7 +115,7 @@ function getChainId(provider: any): Observable<number> {
 		provider,
 		ethChainId,
 		raw => parseInt(raw),
-		"chainChanged"
+		"chainChanged",
 	)
 }
 
@@ -117,7 +123,7 @@ function getObservable<Raw, T>(
 	provider: any,
 	getRaw: (provider: any) => Promise<Raw>,
 	mapRaw: (raw: Raw) => T,
-	eventName: string
+	eventName: string,
 ): Observable<T> {
 	return new Observable<T>(subscriber => {
 		const handler = (raw: Raw) => {

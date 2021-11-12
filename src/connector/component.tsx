@@ -1,5 +1,5 @@
 import { Connector } from "./connector"
-import { useRxOrThrow, Rx } from "@rixio/react"
+import { Rx, useRx } from "@rixio/react"
 import { useMemo } from "react"
 import { from } from "rxjs"
 
@@ -9,7 +9,11 @@ export type ConnectorComponentProps<Connection> = {
 }
 
 export function ConnectorComponent<Connection>({ connector, children }: ConnectorComponentProps<Connection>) {
-	const conn = useRxOrThrow(connector.connection)
+	const wrapped = useRx(connector.connection)
+	if (wrapped.status !== "fulfilled") {
+		return <p>Connecting!!!!...</p>
+	}
+	const conn = wrapped.value
 	if (conn === undefined) {
 		return <Options connector={connector}/>
 	} else if (conn.status === "connecting") {
@@ -24,7 +28,7 @@ function Options<C>({ connector }: { connector: Connector<string, C> }) {
 	return <Rx value$={options$}>{options => (
 		<div>
 			<p>Connect to:</p>
-			{options.map(o => <div>
+			{options.map(o => <div key={o.option}>
 				<button onClick={() => connector.connect(o)}>{o.option}</button>
 			</div>)}
 		</div>

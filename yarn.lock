@@ -2060,7 +2060,7 @@
     pbkdf2 "^3.1.2"
     typedarray-to-buffer "^4.0.0"
 
-"@taquito/taquito@^10.0.0", "@taquito/taquito@^10.2.1":
+"@taquito/taquito@10.2.1", "@taquito/taquito@^10.0.0", "@taquito/taquito@^10.2.1":
   version "10.2.1"
   resolved "https://registry.yarnpkg.com/@taquito/taquito/-/taquito-10.2.1.tgz#0627cb38cbb0a8407e7c5088fd5e7e41f0631f89"
   integrity sha512-ay61aKhFQPnYGu5d9jqEvaZE0EzE6tO9MD+5vOu6/NFVThBd7ysOQS1PB0VprL9SupM1NVDFnEJ8GtE8SYgk8g==
@@ -2083,7 +2083,7 @@
     bs58check "^2.1.2"
     buffer "^6.0.3"
 
-"@temple-wallet/dapp@^5.0.2":
+"@temple-wallet/dapp@5.0.2", "@temple-wallet/dapp@^5.0.2":
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/@temple-wallet/dapp/-/dapp-5.0.2.tgz#6a7759b1527b3e0dd0079642e3b052a027bb2953"
   integrity sha512-IIeHTowHXOp7/JnttfzMyCJjFWwhqOauDN7S2vU0GzHkpT5gH6FBXqB3kvZUyPfoxY0PXuXg+HKh++qABx+g9A==

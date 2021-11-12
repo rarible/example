@@ -7,30 +7,44 @@ import { Fill } from "./fill"
 import { IRaribleSdk } from "@rarible/sdk/build/domain"
 import { Bid } from "./order/bid"
 import { ConnectorComponent } from "./connector/component"
-import { ConnectorImpl, MappedConnectionProvider } from "./connector"
-import { InjectedWeb3ConnectionProvider } from "./connector/injected"
+import { ConnectionProvider, ConnectorImpl, MappedConnectionProvider } from "./connector"
+import { InjectedWeb3ConnectionProvider } from "./connector/ethereum/injected"
 import { toUnionAddress, UnionAddress } from "@rarible/types"
 import { createRaribleSdk } from "@rarible/sdk"
-import { EthereumWallet } from "@rarible/sdk-wallet"
+import { EthereumWallet, TezosWallet } from "@rarible/sdk-wallet"
 import { Web3Ethereum } from "@rarible/web3-ethereum"
 import Web3 from "web3"
+import { TempleConnectionProvider } from "./connector/tezos/temple"
+import { TezosToolkit, WalletProvider } from "@taquito/taquito"
+import { provider } from "./connector/tezos/provider"
 
 const allTabs = ["mint", "sell", "bid", "fill"] as const
 type Tab = typeof allTabs[number]
 
-const injected = MappedConnectionProvider.create(
+const injected: ConnectionProvider<"injected", Wallet> = MappedConnectionProvider.create(
 	new InjectedWeb3ConnectionProvider(),
 	wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }),
 )
+const temple: ConnectionProvider<"temple", Wallet> = MappedConnectionProvider.create(
+	new TempleConnectionProvider("Rarible", "granadanet"),
+	wallet => ({ ...wallet, type: "TEZOS" as const, address: toUnionAddress(`TEZOS:${wallet.address}`) })
+)
+
 type Wallet = {
 	type: "ETHEREUM"
 	address: UnionAddress
 	provider: any
 	chainId: number
+} | {
+	type: "TEZOS"
+	address: UnionAddress
+	wallet: WalletProvider
+	toolkit: TezosToolkit
 }
 
-const connector: ConnectorImpl<"injected", Wallet> = ConnectorImpl
+const connector = ConnectorImpl
 	.create(injected)
+	.add(temple)
 
 function App() {
 	const [tab, setTab] = useState<Tab>("mint")
@@ -39,14 +53,24 @@ function App() {
 		<div className="App">
 			<div style={{ paddingBottom: 10 }}>Connected: {wallet.address}</div>
 			{allTabs.map(t => (<TabButton key={t} tab={t} selected={tab === t} selectTab={setTab}/>))}
-			<div style={{ paddingTop: 10 }}><SelectedTab tab={tab} sdk={createRaribleSdk(createEthereumWallet(wallet), "staging")}/></div>
+			<div style={{ paddingTop: 10 }}><SelectedTab tab={tab} sdk={createRaribleSdk(createBlockchainWallet(wallet), "staging")}/></div>
 		</div>
 	)}</ConnectorComponent>
 }
 
-function createEthereumWallet(wallet: Wallet) {
-	const from = wallet.address.substring("ETHEREUM:".length)
-	return new EthereumWallet(new Web3Ethereum({ web3: new Web3(wallet.provider), from }), wallet.address)
+function createBlockchainWallet(wallet: Wallet) {
+	switch (wallet.type) {
+		case "TEZOS": {
+			const tezos = provider(wallet.wallet, wallet.toolkit)
+			return new TezosWallet({ tezos, api: null as any, config: null as any }, wallet.address)
+		}
+		case "ETHEREUM": {
+			const from = wallet.address.substring("ETHEREUM:".length)
+			return new EthereumWallet(new Web3Ethereum({ web3: new Web3(wallet.provider), from }), wallet.address)
+		}
+		default:
+			throw new Error(`Unknown type: ${typeof wallet}`)
+	}
 }
 
 function TabButton(

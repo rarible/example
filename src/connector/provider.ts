@@ -1,5 +1,6 @@
 import type { Observable } from "rxjs"
 import { map } from "rxjs/operators"
+import { Maybe } from "../common/maybe"
 
 export type StateConnected<T> = {
 	status: "connected"
@@ -24,12 +25,7 @@ export type ConnectionProvider<Option, Connection> = {
 	/**
 	 * List of available connection options: injected web3 can find out what option is available (Metamask, Trust etc.)
 	 */
-	options: Promise<Option[]>
-	/**
-	 * Start connection using specified option
-	 * @param option selected connection option
-	 */
-	connect(option: Option): void
+	option: Promise<Maybe<Option>>
 	/**
 	 * Current connection state. If value is undefined, then provider is considered disconnected.
 	 */
@@ -41,11 +37,6 @@ export class MappedConnectionProvider<O, Connection, NewConnection> implements C
 		private readonly source: ConnectionProvider<O, Connection>,
 		private readonly mapper: (from: Connection) => NewConnection
 	) {
-		this.connect = this.connect.bind(this)
-	}
-
-	connect(option: O): void {
-		this.source.connect(option)
 	}
 
 	connection = this.source.connection.pipe(map(state => {
@@ -62,8 +53,8 @@ export class MappedConnectionProvider<O, Connection, NewConnection> implements C
 		return this.source.isAutoConnected
 	}
 
-	get options() {
-		return this.source.options
+	get option() {
+		return this.source.option
 	}
 
 	static create<O, C, NewC>(souce: ConnectionProvider<O, C>, mapper: (from: C) => NewC): ConnectionProvider<O, NewC> {

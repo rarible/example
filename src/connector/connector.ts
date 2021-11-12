@@ -1,6 +1,6 @@
 import type { Observable } from "rxjs"
 import { Atom } from "@rixio/atom"
-import { mergeMap } from "rxjs/operators"
+import { distinctUntilChanged, mergeMap, shareReplay } from "rxjs/operators"
 import { of } from "rxjs"
 import type { ConnectionProvider, ConnectionState } from "./provider"
 
@@ -36,7 +36,9 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 		this.connect = this.connect.bind(this)
 
 		this.connection = this.provider.pipe(
+			distinctUntilChanged(),
 			mergeMap(p => p ? p.connection : of(undefined)),
+			shareReplay(1),
 		)
 		const sub = this.connection.subscribe(c => {
 			if (c === undefined) {
@@ -74,10 +76,11 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 
 	private async getOptions(): Promise<ProviderOption<Option, Connection>[]> {
 		const result: ProviderOption<Option, Connection>[] = []
-		for (const pair of this.providers.map(it => ({ provider: it, options: it.options }))) {
-			const { provider, options } = pair
-			for (const option of await options) {
-				result.push({ provider, option })
+		for (const pair of this.providers.map(it => ({ provider: it, option: it.option }))) {
+			const { provider, option } = pair
+			const opt = await option
+			if (opt) {
+				result.push({ provider, option: opt })
 			}
 		}
 		return result
@@ -88,7 +91,6 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 		if (connected !== undefined) {
 			throw new Error(`Provider ${connected} already connected`)
 		}
-		option.provider.connect(option.option)
 		this.provider.set(option.provider)
 	}
 }

@@ -9,7 +9,6 @@ describe("Connector", () => {
 		const connector = ConnectorImpl.create(test1).add(test2)
 		expect(await connector.options).toStrictEqual([
 			{ provider: test1, option: "test1-op1" },
-			{ provider: test1, option: "test1-op2" },
 			{ provider: test2, option: "test2-op1" },
 		])
 	})
@@ -45,27 +44,21 @@ describe("Connector", () => {
 })
 
 const test1: ConnectionProvider<"test1-op1" | "test1-op2", string> = {
-	options: Promise.resolve(["test1-op1", "test1-op2"]),
+	option: Promise.resolve("test1-op1"),
 	connection: of({ status: "connected", connection: "connected" }),
-	connect() {
-	},
 	isAutoConnected: Promise.resolve(false),
 }
 
 const test2: ConnectionProvider<"test2-op1", number> = {
-	options: Promise.resolve(["test2-op1"]),
+	option: Promise.resolve("test2-op1"),
 	connection: of({ status: "connected", connection: 1 }),
-	connect() {
-	},
 	isAutoConnected: Promise.resolve(false),
 }
 
 function createTestProvider(connection: Observable<string | undefined>): ConnectionProvider<"option", string> {
 	return {
-		options: Promise.resolve(["option"]),
+		option: Promise.resolve("option"),
 		connection: connection.pipe(map(it => it ? { status: "connected", connection: it } : undefined)),
-		connect() {
-		},
 		isAutoConnected: Promise.resolve(false),
 	}
 }
