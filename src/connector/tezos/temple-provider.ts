@@ -1,7 +1,8 @@
-import { OpKind, OriginateParams, TezosToolkit, TransferParams, WalletProvider } from "@taquito/taquito"
+import { OpKind, OriginateParams, TezosToolkit, TransferParams } from "@taquito/taquito"
 import { TezosProvider } from "tezos-sdk-module/dist/common/base"
+import { TempleWallet } from "@temple-wallet/dapp"
 
-export function provider(wallet: WalletProvider, tk: TezosToolkit) : TezosProvider {
+export function templeProvider(wallet: TempleWallet, tk: TezosToolkit) : TezosProvider {
 	const transfer = async(arg: TransferParams) => {
 		const op = await tk.wallet.transfer(arg).send()
 		return { hash: op.opHash, confirmation: async() => { await op.confirmation() } }
@@ -25,7 +26,7 @@ export function provider(wallet: WalletProvider, tk: TezosToolkit) : TezosProvid
 		return { hash: op.opHash, confirmation: async() => { await op.confirmation() } }
 	}
 	const sign = (bytes: string): Promise<string> => {
-		throw new Error("Not implemented")
+		return wallet.sign(bytes)
 	}
 	const address = () => {
 		return wallet.getPKH()

@@ -2,12 +2,12 @@ import { AbstractConnectionProvider, ConnectionState } from "../provider"
 import { TempleWallet } from "@temple-wallet/dapp"
 import { TempleDAppNetwork } from "@temple-wallet/dapp/src/types"
 import { defer, from, Observable, timer } from "rxjs"
-import { TezosToolkit, WalletProvider } from "@taquito/taquito"
+import { TezosToolkit } from "@taquito/taquito"
 import { concatMap, map, mergeMap, startWith } from "rxjs/operators"
 
 type TezosWallet = {
 	toolkit: TezosToolkit
-	wallet: WalletProvider
+	wallet: TempleWallet
 	address: string
 }
 

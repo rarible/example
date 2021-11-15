@@ -15,8 +15,9 @@ import { EthereumWallet, TezosWallet } from "@rarible/sdk-wallet"
 import { Web3Ethereum } from "@rarible/web3-ethereum"
 import Web3 from "web3"
 import { TempleConnectionProvider } from "./connector/tezos/temple"
-import { TezosToolkit, WalletProvider } from "@taquito/taquito"
-import { provider } from "./connector/tezos/provider"
+import { TezosToolkit } from "@taquito/taquito"
+import { templeProvider } from "./connector/tezos/temple-provider"
+import { TempleWallet } from "@temple-wallet/dapp"
 
 const allTabs = ["mint", "sell", "bid", "fill"] as const
 type Tab = typeof allTabs[number]
@@ -36,7 +37,7 @@ type Wallet = {
 } | {
 	type: "TEZOS"
 	address: UnionAddress
-	wallet: WalletProvider
+	wallet: TempleWallet
 	toolkit: TezosToolkit
 }
 
@@ -61,7 +62,7 @@ function App() {
 function createBlockchainWallet(wallet: Wallet) {
 	switch (wallet.type) {
 		case "TEZOS": {
-			const tezos = provider(wallet.wallet, wallet.toolkit)
+			const tezos = templeProvider(wallet.wallet, wallet.toolkit)
 			return new TezosWallet({ tezos, api: null as any, config: null as any }, wallet.address)
 		}
 		case "ETHEREUM": {
