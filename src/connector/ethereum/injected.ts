@@ -1,6 +1,7 @@
 import { combineLatest, defer, from, Observable } from "rxjs"
 import { map, mergeMap, startWith } from "rxjs/operators"
-import type { ConnectionProvider, ConnectionState } from "../provider"
+import type { ConnectionState } from "../provider"
+import { AbstractConnectionProvider } from "../provider"
 import { Maybe } from "../../common/maybe"
 
 export type EthereumWallet = {
@@ -10,10 +11,11 @@ export type EthereumWallet = {
 	disconnect?: () => void
 }
 
-export class InjectedWeb3ConnectionProvider implements ConnectionProvider<"injected", EthereumWallet> {
-	readonly connection: Observable<ConnectionState<EthereumWallet>>
+export class InjectedWeb3ConnectionProvider extends AbstractConnectionProvider<"injected", EthereumWallet> {
+	private readonly connection: Observable<ConnectionState<EthereumWallet>>
 
 	constructor() {
+		super()
 		this.connection = defer(() => from(connect())).pipe(
 			mergeMap(() => promiseToObservable(getWalletAsync())),
 			map(wallet => {
@@ -27,7 +29,11 @@ export class InjectedWeb3ConnectionProvider implements ConnectionProvider<"injec
 		)
 	}
 
-	get option(): Promise<Maybe<"injected">> {
+	getConnection(): Observable<ConnectionState<EthereumWallet>> {
+		return this.connection
+	}
+
+	getOption(): Promise<Maybe<"injected">> {
 		//todo handle injected provider types (find out what exact provider is used)
 		// metamask, dapper etc
 		const provider = getInjectedProvider()
@@ -38,7 +44,7 @@ export class InjectedWeb3ConnectionProvider implements ConnectionProvider<"injec
 		}
 	}
 
-	get isAutoConnected(): Promise<boolean> {
+	isAutoConnected(): Promise<boolean> {
 		//todo possibly, will be hard to disconnect from injected providers (metamask)
 		// need to check docs
 		//todo handle provider not found

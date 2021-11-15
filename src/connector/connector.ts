@@ -37,7 +37,7 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 
 		this.connection = this.provider.pipe(
 			distinctUntilChanged(),
-			mergeMap(p => p ? p.connection : of(undefined)),
+			mergeMap(p => p ? p.getConnection() : of(undefined)),
 			shareReplay(1),
 		)
 		const sub = this.connection.subscribe(c => {
@@ -60,7 +60,7 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 	}
 
 	private async checkAutoConnect() {
-		const promises = this.providers.map(it => ({ provider: it, autoConnected: it.isAutoConnected }))
+		const promises = this.providers.map(it => ({ provider: it, autoConnected: it.isAutoConnected() }))
 		for (const { provider, autoConnected } of promises) {
 			const value = await autoConnected
 			if (value) {
@@ -76,7 +76,7 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 
 	private async getOptions(): Promise<ProviderOption<Option, Connection>[]> {
 		const result: ProviderOption<Option, Connection>[] = []
-		for (const pair of this.providers.map(it => ({ provider: it, option: it.option }))) {
+		for (const pair of this.providers.map(it => ({ provider: it, option: it.getOption() }))) {
 			const { provider, option } = pair
 			const opt = await option
 			if (opt) {

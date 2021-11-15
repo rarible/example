@@ -1,4 +1,4 @@
-import { ConnectionProvider, ConnectionState } from "../provider"
+import { AbstractConnectionProvider, ConnectionState } from "../provider"
 import { TempleWallet } from "@temple-wallet/dapp"
 import { TempleDAppNetwork } from "@temple-wallet/dapp/src/types"
 import { defer, from, Observable, timer } from "rxjs"
@@ -11,14 +11,15 @@ type TezosWallet = {
 	address: string
 }
 
-export class TempleConnectionProvider implements ConnectionProvider<"temple", TezosWallet> {
+export class TempleConnectionProvider extends AbstractConnectionProvider<"temple", TezosWallet> {
 
-	readonly connection: Observable<ConnectionState<TezosWallet>>
+	private readonly connection: Observable<ConnectionState<TezosWallet>>
 
 	constructor(
 		private readonly applicationName: string,
 		private readonly network: TempleDAppNetwork,
 	) {
+		super()
 		this._connect = this._connect.bind(this)
 		this.toWallet = this.toWallet.bind(this)
 		this.connection = defer(() => from(this._connect())).pipe(
@@ -28,9 +29,13 @@ export class TempleConnectionProvider implements ConnectionProvider<"temple", Te
 		)
 	}
 
+	getConnection(): Observable<ConnectionState<TezosWallet>> {
+		return this.connection
+	}
+
 	private toWallet(wallet: TempleWallet, toolkit: TezosToolkit): Observable<TezosWallet> {
 		return timer(0, 1000).pipe(
-			concatMap(() => from(wallet.getPKH())),
+			concatMap(() => from(toolkit.wallet.pkh())),
 			map(address => ({ address, toolkit, wallet })),
 		)
 	}
@@ -41,8 +46,12 @@ export class TempleConnectionProvider implements ConnectionProvider<"temple", Te
 		return [wallet, wallet.toTezos()]
 	}
 
-	option = Promise.resolve("temple" as const)
+	getOption() {
+		return Promise.resolve("temple" as const)
+	}
 
 	//todo can this be auto-connected?
-	isAutoConnected = Promise.resolve(false)
+	isAutoConnected() {
+		return Promise.resolve(false)
+	}
 }

@@ -7,7 +7,7 @@ import { Fill } from "./fill"
 import { IRaribleSdk } from "@rarible/sdk/build/domain"
 import { Bid } from "./order/bid"
 import { ConnectorComponent } from "./connector/component"
-import { ConnectionProvider, ConnectorImpl, MappedConnectionProvider } from "./connector"
+import { ConnectionProvider, ConnectorImpl } from "./connector"
 import { InjectedWeb3ConnectionProvider } from "./connector/ethereum/injected"
 import { toUnionAddress, UnionAddress } from "@rarible/types"
 import { createRaribleSdk } from "@rarible/sdk"
@@ -21,14 +21,12 @@ import { provider } from "./connector/tezos/provider"
 const allTabs = ["mint", "sell", "bid", "fill"] as const
 type Tab = typeof allTabs[number]
 
-const injected: ConnectionProvider<"injected", Wallet> = MappedConnectionProvider.create(
-	new InjectedWeb3ConnectionProvider(),
-	wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }),
-)
-const temple: ConnectionProvider<"temple", Wallet> = MappedConnectionProvider.create(
-	new TempleConnectionProvider("Rarible", "granadanet"),
-	wallet => ({ ...wallet, type: "TEZOS" as const, address: toUnionAddress(`TEZOS:${wallet.address}`) })
-)
+const injected: ConnectionProvider<"injected", Wallet> = new InjectedWeb3ConnectionProvider()
+	.map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
+
+
+const temple: ConnectionProvider<"temple", Wallet> = new TempleConnectionProvider("Rarible", "granadanet")
+	.map(wallet => ({ ...wallet, type: "TEZOS" as const, address: toUnionAddress(`TEZOS:${wallet.address}`) }))
 
 type Wallet = {
 	type: "ETHEREUM"
@@ -53,7 +51,9 @@ function App() {
 		<div className="App">
 			<div style={{ paddingBottom: 10 }}>Connected: {wallet.address}</div>
 			{allTabs.map(t => (<TabButton key={t} tab={t} selected={tab === t} selectTab={setTab}/>))}
-			<div style={{ paddingTop: 10 }}><SelectedTab tab={tab} sdk={createRaribleSdk(createBlockchainWallet(wallet), "staging")}/></div>
+			<div style={{ paddingTop: 10 }}><SelectedTab tab={tab}
+																									 sdk={createRaribleSdk(createBlockchainWallet(wallet), "staging")}/>
+			</div>
 		</div>
 	)}</ConnectorComponent>
 }

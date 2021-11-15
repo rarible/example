@@ -21,44 +21,81 @@ export type ConnectionProvider<Option, Connection> = {
 	/**
 	 * Checks if this provider is auto-connected. For example, injected mobile providers are connected by default
 	 */
-	isAutoConnected: Promise<boolean>
+	isAutoConnected(): Promise<boolean>
 	/**
 	 * List of available connection options: injected web3 can find out what option is available (Metamask, Trust etc.)
 	 */
-	option: Promise<Maybe<Option>>
+	getOption(): Promise<Maybe<Option>>
 	/**
 	 * Current connection state. If value is undefined, then provider is considered disconnected.
 	 */
-	connection: Observable<ConnectionState<Connection>>
+	getConnection(): Observable<ConnectionState<Connection>>
 }
 
-export class MappedConnectionProvider<O, Connection, NewConnection> implements ConnectionProvider<O, NewConnection> {
+export abstract class AbstractConnectionProvider<O, C> implements ConnectionProvider<O, C> {
+	abstract getConnection(): Observable<ConnectionState<C>>
+
+	abstract getOption(): Promise<Maybe<O>>
+
+	abstract isAutoConnected(): Promise<boolean>
+
+	map<NewConnection>(mapper: (c: C) => NewConnection): ConnectionProvider<O, NewConnection> {
+		return new MappedConnectionProvider(this, mapper)
+	}
+
+	mapOption<NewOption>(mapper: (o: O) => NewOption): ConnectionProvider<NewOption, C> {
+		return new MappedOptionConnectionProvider(this, mapper)
+	}
+}
+
+class MappedOptionConnectionProvider<O, C, NewO> extends AbstractConnectionProvider<NewO, C> {
+	constructor(
+		private readonly source: ConnectionProvider<O, C>,
+		private readonly mapper: (from: O) => NewO,
+	) {
+		super()
+	}
+
+	getConnection(): Observable<ConnectionState<C>> {
+		return this.source.getConnection()
+	}
+
+	isAutoConnected() {
+		return this.source.isAutoConnected()
+	}
+
+	async getOption() {
+		const sourceOption = await this.source.getOption()
+		return sourceOption ? this.mapper(sourceOption) : undefined
+	}
+}
+
+class MappedConnectionProvider<O, Connection, NewConnection> extends AbstractConnectionProvider<O, NewConnection> {
 	constructor(
 		private readonly source: ConnectionProvider<O, Connection>,
 		private readonly mapper: (from: Connection) => NewConnection
 	) {
+		super()
 	}
 
-	connection = this.source.connection.pipe(map(state => {
-		if (state === undefined) {
-			return undefined
-		} else if (state.status === "connected") {
-			return { status: "connected" as const, connection: this.mapper(state.connection) }
-		} else {
-			return state
-		}
-	}))
-
-	get isAutoConnected() {
-		return this.source.isAutoConnected
+	getConnection(): Observable<ConnectionState<NewConnection>> {
+		return this.source.getConnection().pipe(map(state => {
+			if (state === undefined) {
+				return undefined
+			} else if (state.status === "connected") {
+				return { status: "connected" as const, connection: this.mapper(state.connection) }
+			} else {
+				return state
+			}
+		}))
 	}
 
-	get option() {
-		return this.source.option
+	isAutoConnected() {
+		return this.source.isAutoConnected()
 	}
 
-	static create<O, C, NewC>(souce: ConnectionProvider<O, C>, mapper: (from: C) => NewC): ConnectionProvider<O, NewC> {
-		return new MappedConnectionProvider(souce, mapper)
+	getOption() {
+		return this.source.getOption()
 	}
 }
 
