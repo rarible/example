@@ -1,9 +1,9 @@
 import { useState } from "react"
 import { Input } from "../common/input"
 import { FormProps } from "../common/form-props"
-import { MintRequest } from "@rarible/sdk/build/nft/mint/mint-request.type"
-import { PrepareMintResponse } from "@rarible/sdk/build/nft/mint/domain"
 import { Checkbox } from "../common/checkbox"
+import { MintRequest } from "@rarible/sdk/build/types/nft/mint/mint-request.type"
+import { PrepareMintResponse } from "@rarible/sdk/build/types/nft/mint/domain"
 
 type MintFormProps = FormProps<MintRequest> & {
 	response: PrepareMintResponse

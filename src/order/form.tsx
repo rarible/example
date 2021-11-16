@@ -3,7 +3,7 @@ import { useState } from "react"
 import { EthEthereumAssetType } from "@rarible/api-client/build/models/AssetType"
 import { Input } from "../common/input"
 import { FormProps } from "../common/form-props"
-import { OrderRequest, PrepareOrderResponse } from "@rarible/sdk/build/order/common"
+import { OrderRequest, PrepareOrderResponse } from "@rarible/sdk/build/types/order/common"
 
 type SellFormProps = FormProps<OrderRequest> & {
 	response: PrepareOrderResponse

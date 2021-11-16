@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@rarible/sdk": "0.2.7",
+    "@rarible/sdk": "~0.6.3",
     "@rixio/atom": "~0.3.9",
     "@rixio/react": "~0.9.6",
     "@taquito/taquito": "10.2.1",
@@ -16,6 +16,7 @@
     "@types/node": "^12.0.0",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
+    "fortmatic": "^2.2.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",

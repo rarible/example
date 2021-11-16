@@ -3,13 +3,7 @@ import { map, mergeMap, startWith } from "rxjs/operators"
 import type { ConnectionState } from "../provider"
 import { AbstractConnectionProvider } from "../provider"
 import { Maybe } from "../../common/maybe"
-
-export type EthereumWallet = {
-	provider: any
-	address: string
-	chainId: number
-	disconnect?: () => void
-}
+import { EthereumWallet } from "./domain"
 
 export class InjectedWeb3ConnectionProvider extends AbstractConnectionProvider<"injected", EthereumWallet> {
 	private readonly connection: Observable<ConnectionState<EthereumWallet>>
@@ -45,9 +39,10 @@ export class InjectedWeb3ConnectionProvider extends AbstractConnectionProvider<"
 	}
 
 	isAutoConnected(): Promise<boolean> {
-		//todo possibly, will be hard to disconnect from injected providers (metamask)
-		// need to check docs
-		//todo handle provider not found
+		return Promise.resolve(false)
+	}
+
+	async isConnected(): Promise<boolean> {
 		const provider = getInjectedProvider()
 		if (provider !== undefined) {
 			return getAccounts(provider)

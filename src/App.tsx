@@ -25,7 +25,6 @@ type Tab = typeof allTabs[number]
 const injected: ConnectionProvider<"injected", Wallet> = new InjectedWeb3ConnectionProvider()
 	.map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
 
-
 const temple: ConnectionProvider<"temple", Wallet> = new TempleConnectionProvider("Rarible", "granadanet")
 	.map(wallet => ({ ...wallet, type: "TEZOS" as const, address: toUnionAddress(`TEZOS:${wallet.address}`) }))
 
@@ -63,11 +62,11 @@ function createBlockchainWallet(wallet: Wallet) {
 	switch (wallet.type) {
 		case "TEZOS": {
 			const tezos = templeProvider(wallet.wallet, wallet.toolkit)
-			return new TezosWallet({ tezos, api: null as any, config: null as any }, wallet.address)
+			return new TezosWallet({ tezos, api: null as any, config: null as any })
 		}
 		case "ETHEREUM": {
 			const from = wallet.address.substring("ETHEREUM:".length)
-			return new EthereumWallet(new Web3Ethereum({ web3: new Web3(wallet.provider), from }), wallet.address)
+			return new EthereumWallet(new Web3Ethereum({ web3: new Web3(wallet.provider), from }))
 		}
 		default:
 			throw new Error(`Unknown type: ${typeof wallet}`)

@@ -1,6 +1,6 @@
 import { OpKind, OriginateParams, TezosToolkit, TransferParams } from "@taquito/taquito"
-import { TezosProvider } from "tezos-sdk-module/dist/common/base"
-import { TempleWallet } from "@temple-wallet/dapp"
+import type { TezosProvider } from "tezos-sdk-module/dist/common/base"
+import type { TempleWallet } from "@temple-wallet/dapp"
 
 export function templeProvider(wallet: TempleWallet, tk: TezosToolkit) : TezosProvider {
 	const transfer = async(arg: TransferParams) => {

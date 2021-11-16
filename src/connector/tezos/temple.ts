@@ -1,6 +1,6 @@
 import { AbstractConnectionProvider, ConnectionState } from "../provider"
-import { TempleWallet } from "@temple-wallet/dapp"
-import { TempleDAppNetwork } from "@temple-wallet/dapp/src/types"
+import type { TempleWallet } from "@temple-wallet/dapp"
+import type { TempleDAppNetwork } from "@temple-wallet/dapp/src/types"
 import { defer, from, Observable, timer } from "rxjs"
 import { TezosToolkit } from "@taquito/taquito"
 import { concatMap, map, mergeMap, startWith } from "rxjs/operators"
@@ -41,6 +41,7 @@ export class TempleConnectionProvider extends AbstractConnectionProvider<"temple
 	}
 
 	private async _connect(): Promise<[TempleWallet, TezosToolkit]> {
+		const { TempleWallet } = await import("@temple-wallet/dapp")
 		const wallet = new TempleWallet(this.applicationName)
 		await wallet.connect(this.network)
 		return [wallet, wallet.toTezos()]
@@ -53,5 +54,9 @@ export class TempleConnectionProvider extends AbstractConnectionProvider<"temple
 	//todo can this be auto-connected?
 	isAutoConnected() {
 		return Promise.resolve(false)
+	}
+
+	async isConnected(): Promise<boolean> {
+		return true //todo try to find a way to check if temple is connected
 	}
 }

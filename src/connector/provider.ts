@@ -30,6 +30,10 @@ export type ConnectionProvider<Option, Connection> = {
 	 * Current connection state. If value is undefined, then provider is considered disconnected.
 	 */
 	getConnection(): Observable<ConnectionState<Connection>>
+	/**
+	 * Checks if provider can establish connection without asking user permission (if session is not expired)
+	 */
+	isConnected(): Promise<boolean>
 }
 
 export abstract class AbstractConnectionProvider<O, C> implements ConnectionProvider<O, C> {
@@ -38,6 +42,8 @@ export abstract class AbstractConnectionProvider<O, C> implements ConnectionProv
 	abstract getOption(): Promise<Maybe<O>>
 
 	abstract isAutoConnected(): Promise<boolean>
+
+	abstract isConnected(): Promise<boolean>
 
 	map<NewConnection>(mapper: (c: C) => NewConnection): ConnectionProvider<O, NewConnection> {
 		return new MappedConnectionProvider(this, mapper)
@@ -68,6 +74,10 @@ class MappedOptionConnectionProvider<O, C, NewO> extends AbstractConnectionProvi
 		const sourceOption = await this.source.getOption()
 		return sourceOption ? this.mapper(sourceOption) : undefined
 	}
+
+	isConnected(): Promise<boolean> {
+		return this.source.isConnected()
+	}
 }
 
 class MappedConnectionProvider<O, Connection, NewConnection> extends AbstractConnectionProvider<O, NewConnection> {
@@ -96,6 +106,10 @@ class MappedConnectionProvider<O, Connection, NewConnection> extends AbstractCon
 
 	getOption() {
 		return this.source.getOption()
+	}
+
+	isConnected(): Promise<boolean> {
+		return this.source.isConnected()
 	}
 }
 
