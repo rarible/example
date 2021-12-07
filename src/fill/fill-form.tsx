@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Input } from "../common/input"
 import { FormProps } from "../common/form-props"
-import { FillRequest, PrepareFillResponse } from "@rarible/sdk/build/order/fill/domain"
+import { FillRequest, PrepareFillResponse } from "@rarible/sdk/build/types/order/fill/domain"
 
 type FillFormProps = FormProps<FillRequest> & {
 	response: PrepareFillResponse

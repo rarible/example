@@ -2,7 +2,7 @@ import { useState } from "react"
 import { toOrderId } from "@rarible/types"
 import { Input } from "../common/input"
 import { FormProps } from "../common/form-props"
-import { PrepareFillRequest } from "@rarible/sdk/build/order/fill/domain"
+import { PrepareFillRequest } from "@rarible/sdk/build/types/order/fill/domain"
 
 export function PrepareFillForm({ onSubmit }: FormProps<PrepareFillRequest>) {
 	const [orderId, setOrderId] = useState("")
