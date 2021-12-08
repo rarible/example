@@ -1,14 +1,15 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useCallback, useEffect, useState } from 'react'
+import React, {useCallback, useEffect, useState} from 'react'
 import './App.css'
-import { Mint } from "./mint"
-import { Sell } from "./order/sell"
-import { Fill } from "./fill"
-import { useSdk } from "./sdk/use-sdk"
-import { IRaribleSdk } from "@rarible/sdk/build/domain"
-import { Bid } from "./order/bid"
-import { Collection } from "./collection";
+import {Mint} from "./mint"
+import {Sell} from "./order/sell"
+import {Fill} from "./fill"
+import {useSdk} from "./sdk/use-sdk"
+import {IRaribleSdk} from "@rarible/sdk/build/domain"
+import {Bid} from "./order/bid"
+import {Collection} from "./collection";
 import {Maybe} from "./common/maybe";
+import {Blockchain} from "@rarible/api-client";
 
 const allTabs = ["collection", "mint", "sell", "bid", "fill"] as const
 type Tab = typeof allTabs[number]
@@ -19,9 +20,15 @@ function App() {
 	const { sdk, connect, wallet } = useSdk("staging")
 
 	useEffect(() => {
-		wallet?.ethereum.getFrom()
-			.then((address) => setAddress(address))
-			.catch(() => setAddress(undefined))
+		switch (wallet?.blockchain) {
+			case Blockchain.ETHEREUM:
+				wallet?.ethereum.getFrom()
+					.then((address) => setAddress(address))
+					.catch(() => setAddress(undefined))
+				break
+			default:
+				setAddress(undefined)
+		}
 	}, [wallet])
 
 	if (!sdk || !wallet) {
@@ -34,7 +41,6 @@ function App() {
 		<div className="App">
 			<div style={{paddingBottom: 10}}>
 				Connected: {address ?? "not connected"}
-				{connect}
 			</div>
 			{allTabs.map(t => (<TabButton key={t} tab={t} selected={tab === t} selectTab={setTab}/>))}
 			<div style={{ paddingTop: 10 }}>

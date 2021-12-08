@@ -1,4 +1,4 @@
-import { EthereumWallet } from "@rarible/sdk-wallet"
+import {BlockchainWallet, EthereumWallet} from "@rarible/sdk-wallet"
 import { Maybe } from "../common/maybe"
 import { useEffect, useMemo } from "react"
 import { useInjectedProvider } from "./use-injected-provider"
@@ -8,7 +8,7 @@ import { createRaribleSdk } from "@rarible/sdk"
 import { IRaribleSdk } from "@rarible/sdk/build/domain"
 
 type UseSdkResult = {
-	wallet: Maybe<EthereumWallet>
+	wallet: Maybe<BlockchainWallet>
 	sdk: Maybe<IRaribleSdk>
 	connect: () => void
 }
