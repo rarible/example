@@ -1,13 +1,14 @@
 import { useState } from "react"
 import { toOrderId } from "@rarible/types"
-import { Input } from "../common/input"
-import { FormProps } from "../common/form-props"
+import { Input } from "../input"
+import { FormProps } from "../form-props"
 import { PrepareFillRequest } from "@rarible/sdk/build/types/order/fill/domain"
 
 export function PrepareFillForm({ onSubmit }: FormProps<PrepareFillRequest>) {
 	const [orderId, setOrderId] = useState("")
+
 	return (
-		<div>
+		<>
 			<div>
 				<Input
 					value={orderId}
@@ -16,9 +17,6 @@ export function PrepareFillForm({ onSubmit }: FormProps<PrepareFillRequest>) {
 				/>
 			</div>
 			<button onClick={() => onSubmit({ orderId: toOrderId(orderId) })}>Submit</button>
-			<p>
-				Enter Order Id in the input and press Submit to fill this order (buy or accept bid)
-			</p>
-		</div>
+		</>
 	)
 }
