@@ -11,7 +11,7 @@ export function Bid({ sdk }: { sdk: IRaribleSdk }) {
 			process={sdk.order.bid}
 		>{prepareResponse => (
 			<FormWithResult
-				renderForm={onSubmit => <OrderForm onSubmit={onSubmit} response={prepareResponse}/>}
+				renderForm={onSubmit => <OrderForm currency="WETH" onSubmit={onSubmit} response={prepareResponse}/>}
 				process={prepareResponse.submit}
 			>{orderId => <p>{orderId}</p>}</FormWithResult>
 		)}</FormWithResult>
