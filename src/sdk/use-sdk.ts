@@ -1,4 +1,4 @@
-import { BlockchainWallet, EthereumWallet } from "@rarible/sdk-wallet"
+import {BlockchainWallet, EthereumWallet} from "@rarible/sdk-wallet"
 import { Maybe } from "../common/maybe"
 import { useEffect, useMemo } from "react"
 import { useInjectedProvider } from "./use-injected-provider"
