@@ -3,15 +3,16 @@ import React, {useCallback, useEffect, useState} from 'react'
 import './App.css'
 import {Mint} from "./mint"
 import {Sell} from "./order/sell"
-import {Fill} from "./fill"
 import {useSdk} from "./sdk/use-sdk"
 import {IRaribleSdk} from "@rarible/sdk/build/domain"
 import {Bid} from "./order/bid"
 import {Collection} from "./collection";
 import {Maybe} from "./common/maybe";
 import {Blockchain} from "@rarible/api-client";
+import {AcceptBid} from "./acceptBid";
+import {Buy} from "./buy";
 
-const allTabs = ["collection", "mint", "sell", "bid", "fill"] as const
+const allTabs = ["collection", "mint", "sell", "buy", "bid", "accept bid"] as const
 type Tab = typeof allTabs[number]
 
 function App() {
@@ -70,8 +71,10 @@ function SelectedTab({ tab, sdk }: { tab: Tab, sdk: IRaribleSdk }) {
 			return <Sell sdk={sdk}/>
 		case "bid":
 			return <Bid sdk={sdk}/>
-		case "fill":
-			return <Fill sdk={sdk}/>
+		case "buy":
+			return <Buy sdk={sdk}/>
+		case "accept bid":
+			return <AcceptBid sdk={sdk}/>
 	}
 }
 

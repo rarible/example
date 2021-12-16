@@ -11,7 +11,7 @@ export function Sell({ sdk }: { sdk: IRaribleSdk }) {
 			process={sdk.order.sell}
 		>{prepareResponse => (
 			<FormWithResult
-				renderForm={onSubmit => <OrderForm onSubmit={onSubmit} response={prepareResponse}/>}
+				renderForm={onSubmit => <OrderForm currency="ETH" onSubmit={onSubmit} response={prepareResponse}/>}
 				process={prepareResponse.submit}
 			>{orderId => <p>{orderId}</p>}</FormWithResult>
 		)}</FormWithResult>

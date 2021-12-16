@@ -1,19 +1,26 @@
 import { toBigNumber } from "@rarible/types"
 import { useState } from "react"
-import { EthEthereumAssetType } from "@rarible/api-client/build/models/AssetType"
+import {EthErc20AssetType, EthEthereumAssetType} from "@rarible/api-client/build/models/AssetType"
 import { Input } from "../common/input"
 import { FormProps } from "../common/form-props"
 import { OrderRequest, PrepareOrderResponse } from "@rarible/sdk/build/types/order/common";
+import {toContractAddress} from "@rarible/types/build/contract-address";
 
 type SellFormProps = FormProps<OrderRequest> & {
-	response: PrepareOrderResponse
+	response: PrepareOrderResponse;
+	currency: "ETH" | "WETH";
 }
 
 const ethCurrency: EthEthereumAssetType = {
-	"@type": "ETH",
+	"@type": "ETH"
 }
 
-export function OrderForm({ onSubmit, response }: SellFormProps) {
+const erc20Currency: EthErc20AssetType = {
+	"@type": "ERC20",
+	contract: toContractAddress("ETHEREUM:0xc778417E063141139Fce010982780140Aa0cD5Ab")
+}
+
+export function OrderForm({ currency, onSubmit, response }: SellFormProps) {
 	const [price, setPrice] = useState<string>("")
 	const [amount, setAmount] = useState<string>("")
 	const error = validate(price, amount, response)
@@ -27,7 +34,11 @@ export function OrderForm({ onSubmit, response }: SellFormProps) {
 				<Input value={amount} onChange={setAmount} placeholder="Amount"/>
 			</div>
 			<button
-				onClick={() => onSubmit({ amount: parseInt(amount), price: toBigNumber(price), currency: ethCurrency })}
+				onClick={() => onSubmit({
+					amount: parseInt(amount),
+					price: toBigNumber(price),
+					currency: currency === "ETH" ? ethCurrency : erc20Currency,
+				})}
 				disabled={error !== undefined}
 			>Submit</button>
 			{error && <p style={{ color: "red" }}>{error}</p>}
