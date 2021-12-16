@@ -7,6 +7,8 @@ What we have done in this example:
 - Create Bid
 - Purchase (buy item) an order
 
+See Rarible Protocol documentation for more information about [tokens](https://docs.rarible.org/ethereum/smart-contracts/tokens/#tokens) and [smart contracts](https://docs.rarible.org/ethereum/smart-contracts/smart-contracts/).
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 In this example we're using [Metamask](https://metamask.io/) wallet to interact with ethereum blockchain.
