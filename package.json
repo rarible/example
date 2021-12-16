@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@rarible/sdk": "0.2.7",
+    "@rarible/sdk": "0.7.15",
     "@testing-library/dom": "7.21.4",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
@@ -21,7 +21,7 @@
     "web3": "1.2.11"
   },
   "scripts": {
-    "start": "PORT=3008 react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

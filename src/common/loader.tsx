@@ -28,7 +28,7 @@ export function Loader<Request, Response>(
 function extractErrorString(error: any): string {
 	if (typeof error === "string") {
 		return error
-	} else if (error instanceof Error) {
+	} else if (error instanceof Error || error.message) {
 		return error.message
 	} else {
 		return `Unable to extract message from ${JSON.stringify(error)}`
