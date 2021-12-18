@@ -1,7 +1,6 @@
 import type { Observable } from "rxjs"
-import { Atom } from "@rixio/atom"
+import { BehaviorSubject, of } from "rxjs"
 import { distinctUntilChanged, mergeMap, shareReplay } from "rxjs/operators"
-import { of } from "rxjs"
 import type { ConnectionProvider, ConnectionState } from "./provider"
 
 export type ProviderOption<Option, Connection> = {
@@ -25,7 +24,7 @@ export type Connector<Option, Connection> = {
 }
 
 export class ConnectorImpl<Option, Connection> implements Connector<Option, Connection> {
-	private readonly provider: Atom<ConnectionProvider<Option, Connection> | undefined> = Atom.create(undefined)
+	private readonly provider = new BehaviorSubject<ConnectionProvider<Option, Connection> | undefined>(undefined)
 	readonly connection: Observable<ConnectionState<Connection>>
 	readonly close: () => void
 
@@ -42,7 +41,7 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 		)
 		const sub = this.connection.subscribe(c => {
 			if (c === undefined) {
-				this.provider.set(undefined)
+				this.provider.next(undefined)
 			}
 		})
 		this.close = sub.unsubscribe
@@ -64,7 +63,7 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 		for (const { provider, autoConnected } of promises) {
 			const value = await autoConnected
 			if (value) {
-				this.provider.set(provider)
+				this.provider.next(provider)
 				return
 			}
 		}
@@ -87,10 +86,10 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 	}
 
 	connect(option: ProviderOption<Option, Connection>): void {
-		const connected = this.provider.get()
+		const connected = this.provider.value
 		if (connected !== undefined) {
 			throw new Error(`Provider ${connected} already connected`)
 		}
-		this.provider.set(option.provider)
+		this.provider.next(option.provider)
 	}
 }
