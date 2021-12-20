@@ -35,6 +35,10 @@ export class FortmaticConnectionProvider extends AbstractConnectionProvider<"for
 		return new Fortmatic(this.apiKey) //todo all options?
 	}
 
+	getId(): string {
+		return "fortmatic"
+	}
+
 	getConnection() {
 		return this.connection
 	}
