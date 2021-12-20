@@ -21,7 +21,7 @@ export function templeProvider(wallet: TempleWallet, tk: TezosToolkit) : TezosPr
 	}
 	const batch = async(args: TransferParams[]) => {
 		const args2 = args.map(function(a) {
-			return {...a, kind: <OpKind.TRANSACTION>OpKind.TRANSACTION} })
+			return {...a, kind: OpKind.TRANSACTION as OpKind.TRANSACTION} })
 		const op = await tk.wallet.batch(args2).send()
 		return { hash: op.opHash, confirmation: async() => { await op.confirmation() } }
 	}

@@ -1,11 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useCallback, useState } from 'react'
-import './App.css'
-import { Mint } from "./mint"
-import { Sell } from "./order/sell"
-import { Fill } from "./fill"
 import { IRaribleSdk } from "@rarible/sdk/build/domain"
-import { Bid } from "./order/bid"
 import { ConnectorComponent } from "./connector/component"
 import { ConnectionProvider, ConnectorImpl } from "./connector"
 import { InjectedWeb3ConnectionProvider } from "./connector/ethereum/injected"
@@ -18,11 +13,22 @@ import { TempleConnectionProvider } from "./connector/tezos/temple"
 import { TezosToolkit } from "@taquito/taquito"
 import { templeProvider } from "./connector/tezos/temple-provider"
 import { TempleWallet } from "@temple-wallet/dapp"
+import { FortmaticConnectionProvider } from "./connector/ethereum/fortmatic"
+import { Bid } from "./order/bid"
+import './App.css'
+import { Mint } from "./mint"
+import { Sell } from "./order/sell"
+import { Fill } from "./fill"
+import config from "./config.json"
+
 
 const allTabs = ["mint", "sell", "bid", "fill"] as const
 type Tab = typeof allTabs[number]
 
 const injected: ConnectionProvider<"injected", Wallet> = new InjectedWeb3ConnectionProvider()
+	.map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
+
+const fortmatic: ConnectionProvider<"fortmatic", Wallet> = new FortmaticConnectionProvider(config.formatic.apiKey)
 	.map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
 
 const temple: ConnectionProvider<"temple", Wallet> = new TempleConnectionProvider("Rarible", "granadanet")
@@ -42,6 +48,7 @@ type Wallet = {
 
 const connector = ConnectorImpl
 	.create(injected)
+	.add(fortmatic)
 	.add(temple)
 
 function App() {
@@ -51,8 +58,7 @@ function App() {
 		<div className="App">
 			<div style={{ paddingBottom: 10 }}>Connected: {wallet.address}</div>
 			{allTabs.map(t => (<TabButton key={t} tab={t} selected={tab === t} selectTab={setTab}/>))}
-			<div style={{ paddingTop: 10 }}><SelectedTab tab={tab}
-																									 sdk={createRaribleSdk(createBlockchainWallet(wallet), "staging")}/>
+			<div style={{ paddingTop: 10 }}><SelectedTab tab={tab} sdk={createRaribleSdk(createBlockchainWallet(wallet), "staging")}/>
 			</div>
 		</div>
 	)}</ConnectorComponent>

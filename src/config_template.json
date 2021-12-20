@@ -1,0 +1,7 @@
+/* remove this line and rename this file to config.json */
+
+{
+  "formatic": {
+    "apiKey": "pk_..."
+  }
+}
