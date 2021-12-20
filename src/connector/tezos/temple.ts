@@ -29,6 +29,10 @@ export class TempleConnectionProvider extends AbstractConnectionProvider<"temple
 		)
 	}
 
+	getId(): string {
+		return "temple"
+	}
+
 	getConnection(): Observable<ConnectionState<TezosWallet>> {
 		return this.connection
 	}

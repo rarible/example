@@ -18,6 +18,8 @@ export type ConnectionState<T> = StateConnected<T> | StateConnecting | undefined
  * Examples: injected web3, fortmatic, temple tezos wallet, blocto.
  */
 export type ConnectionProvider<Option, Connection> = {
+	getId(): string
+
 	/**
 	 * Checks if this provider is auto-connected. For example, injected mobile providers are connected by default
 	 */
@@ -37,6 +39,8 @@ export type ConnectionProvider<Option, Connection> = {
 }
 
 export abstract class AbstractConnectionProvider<O, C> implements ConnectionProvider<O, C> {
+	abstract getId(): string
+
 	abstract getConnection(): Observable<ConnectionState<C>>
 
 	abstract getOption(): Promise<Maybe<O>>
@@ -60,6 +64,10 @@ class MappedOptionConnectionProvider<O, C, NewO> extends AbstractConnectionProvi
 		private readonly mapper: (from: O) => NewO,
 	) {
 		super()
+	}
+
+	getId(): string {
+		return this.source.getId()
 	}
 
 	getConnection(): Observable<ConnectionState<C>> {
@@ -86,6 +94,10 @@ class MappedConnectionProvider<O, Connection, NewConnection> extends AbstractCon
 		private readonly mapper: (from: Connection) => NewConnection
 	) {
 		super()
+	}
+
+	getId(): string {
+		return this.source.getId()
 	}
 
 	getConnection(): Observable<ConnectionState<NewConnection>> {

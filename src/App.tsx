@@ -2,7 +2,7 @@
 import React, { useCallback, useState } from 'react'
 import { IRaribleSdk } from "@rarible/sdk/build/domain"
 import { ConnectorComponent } from "./connector/component"
-import { ConnectionProvider, ConnectorImpl } from "./connector"
+import { ConnectionProvider, ConnectorImpl, ConnectorState } from "./connector"
 import { InjectedWeb3ConnectionProvider } from "./connector/ethereum/injected"
 import { toUnionAddress, UnionAddress } from "@rarible/types"
 import { createRaribleSdk } from "@rarible/sdk"
@@ -14,8 +14,8 @@ import { TezosToolkit } from "@taquito/taquito"
 import { templeProvider } from "./connector/tezos/temple-provider"
 import { TempleWallet } from "@temple-wallet/dapp"
 import { FortmaticConnectionProvider } from "./connector/ethereum/fortmatic"
-import { Bid } from "./order/bid"
 import './App.css'
+import { Bid } from "./order/bid"
 import { Mint } from "./mint"
 import { Sell } from "./order/sell"
 import { Fill } from "./fill"
@@ -46,8 +46,17 @@ type Wallet = {
 	toolkit: TezosToolkit
 }
 
+const state: ConnectorState = {
+	async getValue(): Promise<string | undefined> {
+		const value = localStorage.getItem("saved_provider")
+		return value ? value : undefined
+	}, async setValue(value: string | undefined): Promise<void> {
+		localStorage.setItem("saved_provider", value || "")
+	},
+}
+
 const connector = ConnectorImpl
-	.create(injected)
+	.create(injected, state)
 	.add(fortmatic)
 	.add(temple)
 

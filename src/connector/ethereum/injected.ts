@@ -23,6 +23,10 @@ export class InjectedWeb3ConnectionProvider extends AbstractConnectionProvider<"
 		)
 	}
 
+	getId(): string {
+		return "injected"
+	}
+
 	getConnection(): Observable<ConnectionState<EthereumWallet>> {
 		return this.connection
 	}
