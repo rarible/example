@@ -7,7 +7,7 @@ import { Fill } from "./fill"
 import { IRaribleSdk } from "@rarible/sdk/build/domain"
 import { Bid } from "./order/bid"
 import { ConnectorComponent } from "./connector/component"
-import { ConnectionProvider, ConnectorImpl } from "./connector"
+import { ConnectionProvider, ConnectorImpl, ConnectorState } from "./connector"
 import { InjectedWeb3ConnectionProvider } from "./connector/ethereum/injected"
 import { toUnionAddress, UnionAddress } from "@rarible/types"
 import { createRaribleSdk } from "@rarible/sdk"
@@ -40,8 +40,17 @@ type Wallet = {
 	toolkit: TezosToolkit
 }
 
+const state: ConnectorState = {
+	async getValue(): Promise<string | undefined> {
+		const value = localStorage.getItem("saved_provider")
+		return value ? value : undefined
+	}, async setValue(value: string | undefined): Promise<void> {
+		localStorage.setItem("saved_provider", value || "")
+	},
+}
+
 const connector = ConnectorImpl
-	.create(injected)
+	.create(injected, state)
 	.add(temple)
 
 function App() {
