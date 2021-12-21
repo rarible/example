@@ -1,24 +1,26 @@
 import { combineLatest, defer, from, Observable } from "rxjs"
-import type { WidgetMode } from "fortmatic/dist/cjs/src/core/sdk"
 import { first, map, mergeMap, startWith } from "rxjs/operators"
+import type { INetwork, default as Portis } from "@portis/web3"
+import Web3 from "web3"
 import { AbstractConnectionProvider, ConnectionState } from "../provider"
 import { EthereumWallet } from "./domain"
-import Web3 from "web3"
 import { Maybe } from "../../common/maybe"
-import { cache, promiseToObservable } from "../common/utils";
+import { cache, promiseToObservable } from "../common/utils"
 
-type FM = WidgetMode
+type PortisInstance = Portis
+type PortisNetwork = string | INetwork
 
-export class FortmaticConnectionProvider extends AbstractConnectionProvider<"fortmatic", EthereumWallet> {
-	private readonly fortmatic: Observable<FM>
+export class PortisConnectionProvider extends AbstractConnectionProvider<"portis", EthereumWallet> {
+	private readonly portis: Observable<PortisInstance>
 	private readonly connection: Observable<ConnectionState<EthereumWallet>>
 
 	constructor(
 		private readonly apiKey: string,
+		private readonly network: PortisNetwork,
 	) {
 		super()
-		this.fortmatic = cache(() => this._connect())
-		this.connection = defer(() => this.fortmatic.pipe(
+		this.portis = cache(() => this._connect())
+		this.connection = defer(() => this.portis.pipe(
 			mergeMap(() => promiseToObservable(this.getWallet())),
 			map(wallet => {
 				if (wallet) {
@@ -31,21 +33,21 @@ export class FortmaticConnectionProvider extends AbstractConnectionProvider<"for
 		))
 	}
 
-	private async _connect(): Promise<FM> {
-		const { default: Fortmatic } = await import("fortmatic")
-		return new Fortmatic(this.apiKey) //todo all options?
+	private async _connect(): Promise<PortisInstance> {
+		const { default: Portis } = await import("@portis/web3")
+		return new Portis(this.apiKey, this.network)
 	}
 
 	getId(): string {
-		return "fortmatic"
+		return "portis"
 	}
 
 	getConnection() {
 		return this.connection
 	}
 
-	getOption(): Promise<Maybe<"fortmatic">> {
-		return Promise.resolve("fortmatic")
+	getOption(): Promise<Maybe<"portis">> {
+		return Promise.resolve("portis")
 	}
 
 	async isAutoConnected(): Promise<boolean> {
@@ -53,14 +55,13 @@ export class FortmaticConnectionProvider extends AbstractConnectionProvider<"for
 	}
 
 	async isConnected(): Promise<boolean> {
-		const sdk = await this.fortmatic.pipe(first()).toPromise()
-		return true === await sdk.user.isLoggedIn()
+		const sdk = await this.portis.pipe(first()).toPromise()
+		return true === (await sdk.isLoggedIn()).result
 	}
 
 	private async getWallet(): Promise<Observable<EthereumWallet | undefined>> {
-		const sdk = await this.fortmatic.pipe(first()).toPromise()
-		const provider = sdk.getProvider()
-		const web3 = new Web3(provider as any)
+		const sdk = await this.portis.pipe(first()).toPromise()
+		const web3 = new Web3(sdk.provider)
 
 		const accounts = web3.eth.getAccounts();
 		const chainId = web3.eth.getChainId();
@@ -69,7 +70,7 @@ export class FortmaticConnectionProvider extends AbstractConnectionProvider<"for
 			map(([accounts, chainId]) => {
 				const address = accounts[0]
 				if (address) {
-					return { chainId, address, provider }
+					return { chainId, address, provider: sdk.provider }
 				} else {
 					return undefined
 				}

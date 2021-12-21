@@ -20,6 +20,7 @@ import { Mint } from "./mint"
 import { Sell } from "./order/sell"
 import { Fill } from "./fill"
 import config from "./config.json"
+import { PortisConnectionProvider } from "./connector/ethereum/portis";
 
 
 const allTabs = ["mint", "sell", "bid", "fill"] as const
@@ -29,6 +30,9 @@ const injected: ConnectionProvider<"injected", Wallet> = new InjectedWeb3Connect
 	.map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
 
 const fortmatic: ConnectionProvider<"fortmatic", Wallet> = new FortmaticConnectionProvider(config.formatic.apiKey)
+	.map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
+
+const portis: ConnectionProvider<"portis", Wallet> = new PortisConnectionProvider(config.portis.apiKey, "rinkeby")
 	.map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
 
 const temple: ConnectionProvider<"temple", Wallet> = new TempleConnectionProvider("Rarible", "granadanet")
@@ -58,6 +62,7 @@ const state: ConnectorState = {
 const connector = ConnectorImpl
 	.create(injected, state)
 	.add(fortmatic)
+	.add(portis)
 	.add(temple)
 
 function App() {

@@ -4,6 +4,7 @@ import type { ConnectionState } from "../provider"
 import { AbstractConnectionProvider } from "../provider"
 import { Maybe } from "../../common/maybe"
 import { EthereumWallet } from "./domain"
+import { promiseToObservable } from "../common/utils";
 
 export class InjectedWeb3ConnectionProvider extends AbstractConnectionProvider<"injected", EthereumWallet> {
 	private readonly connection: Observable<ConnectionState<EthereumWallet>>
@@ -66,12 +67,6 @@ async function connect(): Promise<void> {
 	if (!accounts || accounts.length === 0) {
 		await enableProvider(provider)
 	}
-}
-
-function promiseToObservable<T>(promise: Promise<Observable<T>>): Observable<T> {
-	return from(promise).pipe(
-		mergeMap(it => it),
-	)
 }
 
 async function getWalletAsync(): Promise<Observable<EthereumWallet | undefined>> {
