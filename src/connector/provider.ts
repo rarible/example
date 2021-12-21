@@ -18,6 +18,9 @@ export type ConnectionState<T> = StateConnected<T> | StateConnecting | undefined
  * Examples: injected web3, fortmatic, temple tezos wallet, blocto.
  */
 export type ConnectionProvider<Option, Connection> = {
+	/**
+	 * Returns unique identifier of the connection provider. It's used to save/load last connected provider
+	 */
 	getId(): string
 
 	/**
