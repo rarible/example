@@ -4,7 +4,7 @@ import type { ConnectionState } from "../provider"
 import { AbstractConnectionProvider } from "../provider"
 import { Maybe } from "../../common/maybe"
 import { EthereumWallet } from "./domain"
-import { promiseToObservable } from "../common/utils";
+import { promiseToObservable } from "../common/utils"
 
 export class InjectedWeb3ConnectionProvider extends AbstractConnectionProvider<"injected", EthereumWallet> {
 	private readonly connection: Observable<ConnectionState<EthereumWallet>>

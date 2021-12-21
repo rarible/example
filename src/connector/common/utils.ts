@@ -1,5 +1,5 @@
-import { from, Observable } from "rxjs";
-import { mergeMap } from "rxjs/operators";
+import { from, Observable } from "rxjs"
+import { mergeMap } from "rxjs/operators"
 
 export function cache<T>(fn: () => Promise<T>): Observable<T> {
 	let promise: Promise<T> | undefined = undefined

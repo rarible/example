@@ -21,6 +21,7 @@ import { Sell } from "./order/sell"
 import { Fill } from "./fill"
 import config from "./config.json"
 import { PortisConnectionProvider } from "./connector/ethereum/portis";
+import { TorusConnectionProvider } from "./connector/ethereum/torus";
 
 
 const allTabs = ["mint", "sell", "bid", "fill"] as const
@@ -34,6 +35,12 @@ const fortmatic: ConnectionProvider<"fortmatic", Wallet> = new FortmaticConnecti
 
 const portis: ConnectionProvider<"portis", Wallet> = new PortisConnectionProvider(config.portis.apiKey, "rinkeby")
 	.map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
+
+const torus: ConnectionProvider<"torus", Wallet> = new TorusConnectionProvider({
+	network: {
+		host: "rinkeby"
+	}
+}).map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
 
 const temple: ConnectionProvider<"temple", Wallet> = new TempleConnectionProvider("Rarible", "granadanet")
 	.map(wallet => ({ ...wallet, type: "TEZOS" as const, address: toUnionAddress(`TEZOS:${wallet.address}`) }))
@@ -63,6 +70,7 @@ const connector = ConnectorImpl
 	.create(injected, state)
 	.add(fortmatic)
 	.add(portis)
+	.add(torus)
 	.add(temple)
 
 function App() {
@@ -72,7 +80,8 @@ function App() {
 		<div className="App">
 			<div style={{ paddingBottom: 10 }}>Connected: {wallet.address}</div>
 			{allTabs.map(t => (<TabButton key={t} tab={t} selected={tab === t} selectTab={setTab}/>))}
-			<div style={{ paddingTop: 10 }}><SelectedTab tab={tab} sdk={createRaribleSdk(createBlockchainWallet(wallet), "staging")}/>
+			<div style={{ paddingTop: 10 }}><SelectedTab tab={tab}
+														 sdk={createRaribleSdk(createBlockchainWallet(wallet), "staging")}/>
 			</div>
 		</div>
 	)}</ConnectorComponent>

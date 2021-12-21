@@ -1,4 +1,4 @@
-import { combineLatest, defer, from, Observable } from "rxjs"
+import { combineLatest, defer, Observable } from "rxjs"
 import { first, map, mergeMap, startWith } from "rxjs/operators"
 import type { INetwork, default as Portis } from "@portis/web3"
 import Web3 from "web3"
