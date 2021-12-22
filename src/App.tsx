@@ -22,6 +22,7 @@ import { Fill } from "./fill"
 import config from "./config.json"
 import { PortisConnectionProvider } from "./connector/ethereum/portis";
 import { TorusConnectionProvider } from "./connector/ethereum/torus";
+import { WalletLinkConnectionProvider } from "./connector/ethereum/walletllink"
 
 
 const allTabs = ["mint", "sell", "bid", "fill"] as const
@@ -40,6 +41,16 @@ const torus: ConnectionProvider<"torus", Wallet> = new TorusConnectionProvider({
 	network: {
 		host: "rinkeby"
 	}
+}).map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
+
+const walletlink: ConnectionProvider<"walletlink", Wallet> = new WalletLinkConnectionProvider({
+	estimationUrl: "https://node-rinkeby.rarible.com",
+	networkId: 4,
+	url: "https://node-rinkeby.rarible.com"
+}, {
+	appName: "Rarible",
+	appLogoUrl: "https://rarible.com/static/logo-500.static.png",
+	darkMode: false,
 }).map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
 
 const temple: ConnectionProvider<"temple", Wallet> = new TempleConnectionProvider("Rarible", "granadanet")
@@ -71,6 +82,7 @@ const connector = ConnectorImpl
 	.add(fortmatic)
 	.add(portis)
 	.add(torus)
+	.add(walletlink)
 	.add(temple)
 
 function App() {
