@@ -21,3 +21,21 @@ export function promiseToObservable<T>(promise: Promise<Observable<T>>): Observa
 		mergeMap(it => it),
 	)
 }
+
+export type Listenable<T extends string = string> = {
+	on(event: T, listener: () => void): void
+}
+
+export function isListenable<T extends string = string>(provider: unknown): provider is Listenable<T> {
+	return typeof provider === "object" && provider !== null && "on" in provider
+}
+
+export type WithremoveSubscribe<T extends string = string> = {
+	removeListener(event: T, listener: () => void): void
+}
+
+export function isWithRemoveSubscriber<T extends string = string>(
+	provider: unknown,
+): provider is WithremoveSubscribe<T> {
+	return typeof provider === "object" && provider !== null && "removeListener" in provider
+}

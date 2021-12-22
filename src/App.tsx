@@ -14,15 +14,16 @@ import { TezosToolkit } from "@taquito/taquito"
 import { templeProvider } from "./connector/tezos/temple-provider"
 import { TempleWallet } from "@temple-wallet/dapp"
 import { FortmaticConnectionProvider } from "./connector/ethereum/fortmatic"
+import { PortisConnectionProvider } from "./connector/ethereum/portis";
+import { TorusConnectionProvider } from "./connector/ethereum/torus";
+import { WalletLinkConnectionProvider } from "./connector/ethereum/walletllink"
+import { MEWConnectionProvider } from "./connector/ethereum/mew"
 import './App.css'
 import { Bid } from "./order/bid"
 import { Mint } from "./mint"
 import { Sell } from "./order/sell"
 import { Fill } from "./fill"
 import config from "./config.json"
-import { PortisConnectionProvider } from "./connector/ethereum/portis";
-import { TorusConnectionProvider } from "./connector/ethereum/torus";
-import { WalletLinkConnectionProvider } from "./connector/ethereum/walletllink"
 
 
 const allTabs = ["mint", "sell", "bid", "fill"] as const
@@ -51,6 +52,11 @@ const walletlink: ConnectionProvider<"walletlink", Wallet> = new WalletLinkConne
 	appName: "Rarible",
 	appLogoUrl: "https://rarible.com/static/logo-500.static.png",
 	darkMode: false,
+}).map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
+
+const mew: ConnectionProvider<"mew", Wallet> = new MEWConnectionProvider({
+	networkId: 4,
+	rpcUrl: "https://node-rinkeby.rarible.com"
 }).map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
 
 const temple: ConnectionProvider<"temple", Wallet> = new TempleConnectionProvider("Rarible", "granadanet")
@@ -83,6 +89,7 @@ const connector = ConnectorImpl
 	.add(portis)
 	.add(torus)
 	.add(walletlink)
+	.add(mew)
 	.add(temple)
 
 function App() {
