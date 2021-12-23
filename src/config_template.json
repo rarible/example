@@ -6,5 +6,9 @@
   },
   "portis": {
     "apiKey": "..."
+  },
+  "walletConnect": {
+    "infuraId": "...",
+    "bridge": "..."
   }
 }

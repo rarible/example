@@ -4,19 +4,18 @@ import { EthereumWallet } from "../domain"
 import Web3 from "web3"
 import { isListenable, isWithRemoveSubscriber } from "../../common/utils"
 
-
 export function connectToWeb3(web3: Web3, provider: any, options: {
 	disconnect?: () => Promise<void>
 } = {}): Observable<ConnectionState<EthereumWallet>> {
 	return new Observable<ConnectionState<EthereumWallet>>(subscriber => {
-		const returnDisconnected = () => {
+		const disconnect = () => {
 			subscriber.next(STATE_DISCONNECTED)
 			//subscriber.complete()
 		}
 
 		if (isListenable(provider)) {
 			const externalDisconnectHandler = () => {
-				returnDisconnected()
+				disconnect()
 			}
 
 			provider.on("disconnected", externalDisconnectHandler)
@@ -33,10 +32,10 @@ export function connectToWeb3(web3: Web3, provider: any, options: {
 				const wallet: EthereumWallet = { chainId, address, provider: web3 }
 				subscriber.next({ status: "connected" as const, connection: wallet, disconnect: options.disconnect })
 			} else {
-				returnDisconnected()
+				disconnect()
 			}
 		}).catch(() => {
-			returnDisconnected()
+			disconnect()
 		})
 	})
 }
