@@ -1,11 +1,11 @@
-import { combineLatest, defer, Observable } from "rxjs"
+import { defer, Observable } from "rxjs"
 import type { WidgetMode } from "fortmatic/dist/cjs/src/core/sdk"
 import { first, map, mergeMap, startWith } from "rxjs/operators"
 import { AbstractConnectionProvider, ConnectionState } from "../provider"
 import { EthereumWallet } from "./domain"
 import Web3 from "web3"
 import { Maybe } from "../../common/maybe"
-import { cache, promiseToObservable } from "../common/utils"
+import { cache } from "../common/utils"
 
 type FM = WidgetMode
 
@@ -19,7 +19,7 @@ export class FortmaticConnectionProvider extends AbstractConnectionProvider<"for
 		super()
 		this.fortmatic = cache(() => this._connect())
 		this.connection = defer(() => this.fortmatic.pipe(
-			mergeMap(() => promiseToObservable(this.getWallet())),
+			mergeMap(sdk => getWallet(sdk)),
 			map(wallet => {
 				if (wallet) {
 					return { status: "connected" as const, connection: wallet }
@@ -56,24 +56,20 @@ export class FortmaticConnectionProvider extends AbstractConnectionProvider<"for
 		const sdk = await this.fortmatic.pipe(first()).toPromise()
 		return true === await sdk.user.isLoggedIn()
 	}
+}
 
-	private async getWallet(): Promise<Observable<EthereumWallet | undefined>> {
-		const sdk = await this.fortmatic.pipe(first()).toPromise()
-		const provider = sdk.getProvider()
-		const web3 = new Web3(provider as any)
+async function getWallet(sdk: WidgetMode): Promise<EthereumWallet | undefined> {
+	const provider = sdk.getProvider()
+	const web3 = new Web3(provider as any)
 
-		const accounts = web3.eth.getAccounts();
-		const chainId = web3.eth.getChainId();
+	const accounts = await web3.eth.getAccounts();
+	const chainId = await web3.eth.getChainId();
 
-		return combineLatest([accounts, chainId]).pipe(
-			map(([accounts, chainId]) => {
-				const address = accounts[0]
-				if (address) {
-					return { chainId, address, provider }
-				} else {
-					return undefined
-				}
-			}),
-		)
+	const address = accounts[0]
+	if (address) {
+		return { chainId, address, provider }
+	} else {
+		return undefined
 	}
 }
+
