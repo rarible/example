@@ -54,7 +54,7 @@ export class FortmaticConnectionProvider extends AbstractConnectionProvider<"for
 
 	async isConnected(): Promise<boolean> {
 		const sdk = await this.fortmatic.pipe(first()).toPromise()
-		return true === await sdk.user.isLoggedIn()
+		return await sdk.user.isLoggedIn()
 	}
 }
 

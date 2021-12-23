@@ -5,13 +5,18 @@ import { Maybe } from "../common/maybe"
 export type StateConnected<T> = {
 	status: "connected"
 	connection: T
+	disconnect?: () => Promise<void>
 }
 
 export type StateConnecting = {
 	status: "connecting"
 }
 
-export type ConnectionState<T> = StateConnected<T> | StateConnecting | undefined
+export type StateInitializing = {
+	status: "initializing"
+}
+
+export type ConnectionState<T> = StateConnected<T> | StateConnecting | StateInitializing | undefined
 
 /**
  * Provider of the connection.

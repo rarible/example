@@ -1,6 +1,6 @@
 import type { Observable } from "rxjs"
-import { BehaviorSubject, of, Subscription } from "rxjs"
-import { distinctUntilChanged, mergeMap, shareReplay } from "rxjs/operators"
+import { BehaviorSubject, concat, defer, of } from "rxjs"
+import { distinctUntilChanged, mergeMap, shareReplay, tap } from "rxjs/operators"
 import type { ConnectionProvider, ConnectionState } from "./provider"
 
 export type ProviderOption<Option, Connection> = {
@@ -33,7 +33,6 @@ export interface ConnectorState {
 
 export class ConnectorImpl<Option, Connection> implements Connector<Option, Connection> {
 	private readonly provider = new BehaviorSubject<ConnectionProvider<Option, Connection> | undefined>(undefined)
-	private sub: Subscription | undefined = undefined
 	readonly connection: Observable<ConnectionState<Connection>>
 
 	constructor(
@@ -43,16 +42,18 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 		this.add = this.add.bind(this)
 		this.connect = this.connect.bind(this)
 
-		this.connection = this.provider.pipe(
+		this.connection = concat(
+			of({ status: "initializing" as const }),
+			defer(() => this.checkAutoConnect()),
+			this.provider.pipe(
+				distinctUntilChanged(),
+				mergeMap(p => p ? p.getConnection() : of(undefined)),
+			)
+		).pipe(
 			distinctUntilChanged(),
-			mergeMap(p => p ? p.getConnection() : of(undefined)),
 			shareReplay(1),
-		)
-		this.close = () => {}
-		// this.close = sub.unsubscribe
-		this.checkAutoConnect().then(() => {
-			this.sub = this.connection.subscribe(async c => {
-				if (c === undefined) {
+			tap(async conn => {
+				if (conn === undefined) {
 					this.provider.next(undefined)
 					const current = await this.state?.getValue()
 					if (current !== undefined) {
@@ -61,13 +62,7 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 					}
 				}
 			})
-		})
-	}
-
-	close() {
-		if (this.sub !== undefined) {
-			this.sub.unsubscribe()
-		}
+		)
 	}
 
 	add<NewOption, NewConnection>(provider: ConnectionProvider<Option | NewOption, Connection | NewConnection>) {
@@ -81,29 +76,36 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 		return new ConnectorImpl([provider], state)
 	}
 
-	private async checkAutoConnect() {
+	private async checkAutoConnect(): Promise<ConnectionState<Connection>> {
+		console.log("Connector initialized. Checking auto-(re)connect")
 		const promises = this.providers.map(it => ({ provider: it, autoConnected: it.isAutoConnected() }))
 		for (const { provider, autoConnected } of promises) {
 			const value = await autoConnected
 			if (value) {
+				console.log(`Provider ${provider.getId()} is auto-connected`)
 				this.provider.next(provider)
 				this.state?.setValue(provider.getId())
-				return
+				return { status: "connecting" }
 			}
 		}
 		const selected = await this.state?.getValue()
 		if (selected !== undefined) {
 			for (const provider of this.providers) {
 				if (selected === provider.getId()) {
+					console.log(`Previously connected provider found: ${selected}. checking if is connected`)
 					if (await provider.isConnected()) {
+						console.log(`Provider ${selected} is connected`)
 						this.provider.next(provider)
+						return { status: "connecting" }
 					} else {
+						console.log(`Provider ${selected} is not connected`)
 						this.state?.setValue(undefined)
+						return undefined
 					}
-					return
 				}
 			}
 		}
+		return undefined
 	}
 
 	get options(): Promise<ProviderOption<Option, Connection>[]> {
@@ -127,6 +129,7 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 		if (connected !== undefined) {
 			throw new Error(`Provider ${connected} already connected`)
 		}
+		console.log(`Selected ${option.provider.getId()} provider`)
 		this.provider.next(option.provider)
 		this.state?.setValue(option.provider.getId())
 	}
