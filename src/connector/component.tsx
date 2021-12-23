@@ -10,14 +10,20 @@ export type ConnectorComponentProps<Connection> = {
 
 export function ConnectorComponent<Connection>({ connector, children }: ConnectorComponentProps<Connection>) {
 	const conn = useRxOrThrow(connector.connection)
-	if (conn === undefined) {
+	if (conn.status === "disconnected") {
 		return <Options connector={connector}/>
 	} else if (conn.status === "connecting") {
 		return <p>Connecting...</p>
 	} else if (conn.status === "initializing") {
 		return <p>Initializing...</p>
 	} else {
-		return children(conn.connection)
+		console.log("Connected:", conn.disconnect)
+		return (
+			<div>
+				{conn.disconnect && <button onClick={conn.disconnect}>disconnect</button>}
+				{children(conn.connection)}
+			</div>
+		)
 	}
 }
 

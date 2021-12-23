@@ -1,7 +1,7 @@
 import { defer, Observable } from "rxjs"
 import type { WidgetMode } from "fortmatic/dist/cjs/src/core/sdk"
-import { first, map, mergeMap, startWith } from "rxjs/operators"
-import { AbstractConnectionProvider, ConnectionState } from "../provider"
+import { first, mergeMap, startWith } from "rxjs/operators"
+import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING, STATE_DISCONNECTED } from "../provider"
 import { EthereumWallet } from "./domain"
 import Web3 from "web3"
 import { Maybe } from "../../common/maybe"
@@ -19,15 +19,8 @@ export class FortmaticConnectionProvider extends AbstractConnectionProvider<"for
 		super()
 		this.fortmatic = cache(() => this._connect())
 		this.connection = defer(() => this.fortmatic.pipe(
-			mergeMap(sdk => getWallet(sdk)),
-			map(wallet => {
-				if (wallet) {
-					return { status: "connected" as const, connection: wallet }
-				} else {
-					return undefined
-				}
-			}),
-			startWith({ status: "connecting" as const }),
+			mergeMap(sdk => getConnection(sdk)),
+			startWith(STATE_CONNECTING),
 		))
 	}
 
@@ -58,7 +51,7 @@ export class FortmaticConnectionProvider extends AbstractConnectionProvider<"for
 	}
 }
 
-async function getWallet(sdk: WidgetMode): Promise<EthereumWallet | undefined> {
+async function getConnection(sdk: WidgetMode): Promise<ConnectionState<EthereumWallet>> {
 	const provider = sdk.getProvider()
 	const web3 = new Web3(provider as any)
 
@@ -67,9 +60,16 @@ async function getWallet(sdk: WidgetMode): Promise<EthereumWallet | undefined> {
 
 	const address = accounts[0]
 	if (address) {
-		return { chainId, address, provider }
+		const wallet: EthereumWallet = { chainId, address, provider }
+		const disconnect = async () => {
+			try {
+				await sdk.user.logout()
+			} catch (_) {
+			}
+		}
+		return { status: "connected" as const, connection: wallet, disconnect }
 	} else {
-		return undefined
+		return STATE_DISCONNECTED
 	}
 }
 

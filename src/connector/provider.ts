@@ -16,7 +16,15 @@ export type StateInitializing = {
 	status: "initializing"
 }
 
-export type ConnectionState<T> = StateConnected<T> | StateConnecting | StateInitializing | undefined
+export type StateDisconnected = {
+	status: "disconnected"
+}
+
+export const STATE_CONNECTING: StateConnecting = { status: "connecting" }
+export const STATE_DISCONNECTED: StateDisconnected = { status: "disconnected" }
+export const STATE_INITIALIZING: StateInitializing = { status: "initializing" }
+
+export type ConnectionState<T> = StateConnected<T> | StateConnecting | StateInitializing | StateDisconnected
 
 /**
  * Provider of the connection.
@@ -111,7 +119,7 @@ class MappedConnectionProvider<O, Connection, NewConnection> extends AbstractCon
 	getConnection(): Observable<ConnectionState<NewConnection>> {
 		return this.source.getConnection().pipe(map(state => {
 			if (state === undefined) {
-				return undefined
+				return { status: "disconnected" }
 			} else if (state.status === "connected") {
 				return { status: "connected" as const, connection: this.mapper(state.connection) }
 			} else {

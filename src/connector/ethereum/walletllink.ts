@@ -2,7 +2,7 @@ import { combineLatest, defer, Observable } from "rxjs"
 import { first, map, mergeMap, startWith } from "rxjs/operators"
 import Web3 from "web3"
 import type { WalletLinkOptions, WalletLink } from "walletlink/dist/WalletLink"
-import { AbstractConnectionProvider, ConnectionState } from "../provider"
+import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING, STATE_DISCONNECTED } from "../provider"
 import { EthereumWallet } from "./domain"
 import { Maybe } from "../../common/maybe"
 import { cache, promiseToObservable } from "../common/utils"
@@ -29,10 +29,10 @@ export class WalletLinkConnectionProvider extends AbstractConnectionProvider<"wa
 				if (wallet) {
 					return { status: "connected" as const, connection: wallet }
 				} else {
-					return undefined
+					return STATE_DISCONNECTED
 				}
 			}),
-			startWith({ status: "connecting" as const }),
+			startWith(STATE_CONNECTING),
 		))
 	}
 

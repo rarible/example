@@ -2,6 +2,7 @@ import type { Observable } from "rxjs"
 import { BehaviorSubject, concat, defer, of } from "rxjs"
 import { distinctUntilChanged, mergeMap, shareReplay, tap } from "rxjs/operators"
 import type { ConnectionProvider, ConnectionState } from "./provider"
+import { STATE_CONNECTING, STATE_DISCONNECTED, STATE_INITIALIZING } from "./provider"
 
 export type ProviderOption<Option, Connection> = {
 	provider: ConnectionProvider<Option, Connection>
@@ -43,16 +44,23 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 		this.connect = this.connect.bind(this)
 
 		this.connection = concat(
-			of({ status: "initializing" as const }),
+			of(STATE_INITIALIZING),
 			defer(() => this.checkAutoConnect()),
 			this.provider.pipe(
 				distinctUntilChanged(),
-				mergeMap(p => p ? p.getConnection() : of(undefined)),
+				mergeMap(p => p ? p.getConnection() : of(STATE_DISCONNECTED)),
 			)
 		).pipe(
-			distinctUntilChanged(),
+			distinctUntilChanged((c1, c2) => {
+				if (c1 === c2) return true
+				if (c1.status === "connected" && c2.status === "connected") {
+					return c1.connection === c2.connection
+				}
+				return c1.status === c2.status;
+			}),
 			shareReplay(1),
 			tap(async conn => {
+				console.log("conn", conn)
 				if (conn === undefined) {
 					this.provider.next(undefined)
 					const current = await this.state?.getValue()
@@ -85,7 +93,7 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 				console.log(`Provider ${provider.getId()} is auto-connected`)
 				this.provider.next(provider)
 				this.state?.setValue(provider.getId())
-				return { status: "connecting" }
+				return STATE_CONNECTING
 			}
 		}
 		const selected = await this.state?.getValue()
@@ -96,16 +104,16 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 					if (await provider.isConnected()) {
 						console.log(`Provider ${selected} is connected`)
 						this.provider.next(provider)
-						return { status: "connecting" }
+						return STATE_CONNECTING
 					} else {
 						console.log(`Provider ${selected} is not connected`)
 						this.state?.setValue(undefined)
-						return undefined
+						return STATE_DISCONNECTED
 					}
 				}
 			}
 		}
-		return undefined
+		return STATE_DISCONNECTED
 	}
 
 	get options(): Promise<ProviderOption<Option, Connection>[]> {

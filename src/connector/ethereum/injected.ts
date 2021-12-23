@@ -1,7 +1,7 @@
 import { combineLatest, defer, from, Observable } from "rxjs"
 import { map, mergeMap, startWith } from "rxjs/operators"
 import type { ConnectionState } from "../provider"
-import { AbstractConnectionProvider } from "../provider"
+import { AbstractConnectionProvider, STATE_CONNECTING, STATE_DISCONNECTED } from "../provider"
 import { Maybe } from "../../common/maybe"
 import { EthereumWallet } from "./domain"
 import { promiseToObservable } from "../common/utils"
@@ -17,10 +17,10 @@ export class InjectedWeb3ConnectionProvider extends AbstractConnectionProvider<"
 				if (wallet) {
 					return { status: "connected" as const, connection: wallet }
 				} else {
-					return undefined
+					return STATE_DISCONNECTED
 				}
 			}),
-			startWith({ status: "connecting" as const }),
+			startWith(STATE_CONNECTING),
 		)
 	}
 
