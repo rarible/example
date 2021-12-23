@@ -1,32 +1,33 @@
-import { combineLatest, defer, Observable } from "rxjs"
-import { first, map, mergeMap, startWith } from "rxjs/operators"
+import { defer, Observable } from "rxjs"
+import { first, mergeMap, startWith } from "rxjs/operators"
 import type { default as Torus } from "@toruslabs/torus-embed"
 import Web3 from "web3"
 import type { TorusParams } from "@toruslabs/torus-embed/dist/types/interfaces"
-import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING, STATE_DISCONNECTED } from "../provider"
+import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING } from "../provider"
 import { EthereumWallet } from "./domain"
 import { Maybe } from "../../common/maybe"
-import { cache, promiseToObservable } from "../common/utils"
+import { cache, noop } from "../common/utils"
+import { connectToWeb3 } from "./common/web3connection"
 
 export type TorusConfig = TorusParams
 
-export class TorusConnectionProvider extends AbstractConnectionProvider<"torus", EthereumWallet> {
-	private readonly torus: Observable<Torus>
+const PROVIDER_ID = "torus" as const
+
+export class TorusConnectionProvider extends AbstractConnectionProvider<typeof PROVIDER_ID, EthereumWallet> {
+	private readonly instance: Observable<Torus>
 	private readonly connection: Observable<ConnectionState<EthereumWallet>>
 
 	constructor(
 		private readonly config: TorusConfig
 	) {
 		super()
-		this.torus = cache(() => this._connect())
-		this.connection = defer(() => this.torus.pipe(
-			mergeMap(() => promiseToObservable(this.getWallet())),
-			map(wallet => {
-				if (wallet) {
-					return { status: "connected" as const, connection: wallet }
-				} else {
-					return STATE_DISCONNECTED
-				}
+		this.instance = cache(() => this._connect())
+		this.connection = defer(() => this.instance.pipe(
+			mergeMap(instance => {
+				const web3 = new Web3(instance.provider as any)
+				return connectToWeb3(web3, instance, {
+					disconnect: () => instance.cleanUp().catch(noop)
+				})
 			}),
 			startWith(STATE_CONNECTING),
 		))
@@ -41,15 +42,15 @@ export class TorusConnectionProvider extends AbstractConnectionProvider<"torus",
 	}
 
 	getId(): string {
-		return "torus"
+		return PROVIDER_ID
 	}
 
 	getConnection() {
 		return this.connection
 	}
 
-	getOption(): Promise<Maybe<"torus">> {
-		return Promise.resolve("torus")
+	getOption(): Promise<Maybe<typeof PROVIDER_ID>> {
+		return Promise.resolve(PROVIDER_ID)
 	}
 
 	async isAutoConnected(): Promise<boolean> {
@@ -57,26 +58,7 @@ export class TorusConnectionProvider extends AbstractConnectionProvider<"torus",
 	}
 
 	async isConnected(): Promise<boolean> {
-		const sdk = await this.torus.pipe(first()).toPromise()
+		const sdk = await this.instance.pipe(first()).toPromise()
 		return sdk.isInitialized && sdk.isLoggedIn
-	}
-
-	private async getWallet(): Promise<Observable<EthereumWallet | undefined>> {
-		const sdk = await this.torus.pipe(first()).toPromise()
-		const web3 = new Web3(sdk.provider as any)
-
-		const accounts = web3.eth.getAccounts();
-		const chainId = web3.eth.getChainId();
-
-		return combineLatest([accounts, chainId]).pipe(
-			map(([accounts, chainId]) => {
-				const address = accounts[0]
-				if (address) {
-					return { chainId, address, provider: sdk.provider }
-				} else {
-					return undefined
-				}
-			}),
-		)
 	}
 }

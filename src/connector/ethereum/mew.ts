@@ -1,10 +1,11 @@
-import { combineLatest, defer, Observable } from "rxjs"
-import { first, map, mergeMap, startWith } from "rxjs/operators"
+import { defer, Observable } from "rxjs"
+import { first, mergeMap, startWith } from "rxjs/operators"
 import Web3 from "web3"
-import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING, STATE_DISCONNECTED } from "../provider"
+import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING } from "../provider"
 import { EthereumWallet } from "./domain"
 import { Maybe } from "../../common/maybe"
-import { cache, isListenable, promiseToObservable } from "../common/utils"
+import { cache } from "../common/utils"
+import { connectToWeb3 } from "./common/web3connection"
 
 export type MEWConfig = {
 	rpcUrl: string
@@ -13,23 +14,23 @@ export type MEWConfig = {
 
 type MewInstance = any
 
-export class MEWConnectionProvider extends AbstractConnectionProvider<"mew", EthereumWallet> {
-	private readonly mew: Observable<MewInstance>
+const PROVIDER_ID = "mew" as const
+
+export class MEWConnectionProvider extends AbstractConnectionProvider<typeof PROVIDER_ID, EthereumWallet> {
+	private readonly instance: Observable<MewInstance>
 	private readonly connection: Observable<ConnectionState<EthereumWallet>>
 
 	constructor(
 		private readonly config: MEWConfig
 	) {
 		super()
-		this.mew = cache(() => this._connect())
-		this.connection = defer(() => this.mew.pipe(
-			mergeMap(() => promiseToObservable(this.getWallet())),
-			map(wallet => {
-				if (wallet) {
-					return { status: "connected" as const, connection: wallet }
-				} else {
-					return STATE_DISCONNECTED
-				}
+		this.instance = cache(() => this._connect())
+		this.connection = defer(() => this.instance.pipe(
+			mergeMap(instance => {
+				const web3 = new Web3(instance.makeWeb3Provider())
+				return connectToWeb3(web3, instance, {
+					disconnect: () => instance.disconnect()
+				})
 			}),
 			startWith(STATE_CONNECTING),
 		))
@@ -47,15 +48,15 @@ export class MEWConnectionProvider extends AbstractConnectionProvider<"mew", Eth
 	}
 
 	getId(): string {
-		return "mew"
+		return PROVIDER_ID
 	}
 
 	getConnection() {
 		return this.connection
 	}
 
-	getOption(): Promise<Maybe<"mew">> {
-		return Promise.resolve("mew")
+	getOption(): Promise<Maybe<typeof PROVIDER_ID>> {
+		return Promise.resolve(PROVIDER_ID)
 	}
 
 	async isAutoConnected(): Promise<boolean> {
@@ -63,26 +64,7 @@ export class MEWConnectionProvider extends AbstractConnectionProvider<"mew", Eth
 	}
 
 	async isConnected(): Promise<boolean> {
-		const wallet = await (await this.getWallet()).pipe(first()).toPromise()
-		return wallet?.address !== undefined
-	}
-
-	private async getWallet(): Promise<Observable<EthereumWallet | undefined>> {
-		const sdk = await this.mew.pipe(first()).toPromise()
-		const web3 = new Web3(sdk.makeWeb3Provider())
-
-		const accounts = web3.eth.getAccounts();
-		const chainId = web3.eth.getChainId();
-
-		return combineLatest([accounts, chainId]).pipe(
-			map(([accounts, chainId]) => {
-				const address = accounts[0]
-				if (address) {
-					return { chainId, address, provider: web3 }
-				} else {
-					return undefined
-				}
-			}),
-		)
+		const instance = await this.instance.pipe(first()).toPromise()
+		return instance.Provider.isConnected
 	}
 }

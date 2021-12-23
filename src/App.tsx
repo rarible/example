@@ -24,6 +24,7 @@ import { Mint } from "./mint"
 import { Sell } from "./order/sell"
 import { Fill } from "./fill"
 import config from "./config.json"
+import { IframeConnectionProvider } from "./connector/ethereum/iframe"
 
 
 const allTabs = ["mint", "sell", "bid", "fill"] as const
@@ -59,6 +60,9 @@ const mew: ConnectionProvider<"mew", Wallet> = new MEWConnectionProvider({
 	rpcUrl: "https://node-rinkeby.rarible.com"
 }).map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
 
+const iframe: ConnectionProvider<"iframe", Wallet> = new IframeConnectionProvider()
+	.map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
+
 const temple: ConnectionProvider<"temple", Wallet> = new TempleConnectionProvider("Rarible", "granadanet")
 	.map(wallet => ({ ...wallet, type: "TEZOS" as const, address: toUnionAddress(`TEZOS:${wallet.address}`) }))
 
@@ -90,6 +94,7 @@ const connector = ConnectorImpl
 	.add(torus)
 	.add(walletlink)
 	.add(mew)
+	.add(iframe)
 	.add(temple)
 
 function App() {

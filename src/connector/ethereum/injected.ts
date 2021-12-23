@@ -6,14 +6,16 @@ import { Maybe } from "../../common/maybe"
 import { EthereumWallet } from "./domain"
 import { promiseToObservable } from "../common/utils"
 
-export class InjectedWeb3ConnectionProvider extends AbstractConnectionProvider<"injected", EthereumWallet> {
+const PROVIDER_ID = "injected" as const
+
+export class InjectedWeb3ConnectionProvider extends AbstractConnectionProvider<typeof PROVIDER_ID, EthereumWallet> {
 	private readonly connection: Observable<ConnectionState<EthereumWallet>>
 
 	constructor() {
 		super()
 		this.connection = defer(() => from(connect())).pipe(
 			mergeMap(() => promiseToObservable(getWalletAsync())),
-			map(wallet => {
+			map((wallet) => {
 				if (wallet) {
 					return { status: "connected" as const, connection: wallet }
 				} else {
@@ -25,19 +27,19 @@ export class InjectedWeb3ConnectionProvider extends AbstractConnectionProvider<"
 	}
 
 	getId(): string {
-		return "injected"
+		return PROVIDER_ID
 	}
 
 	getConnection(): Observable<ConnectionState<EthereumWallet>> {
 		return this.connection
 	}
 
-	getOption(): Promise<Maybe<"injected">> {
+	getOption(): Promise<Maybe<typeof PROVIDER_ID>> {
 		//todo handle injected provider types (find out what exact provider is used)
 		// metamask, dapper etc
 		const provider = getInjectedProvider()
 		if (provider !== undefined) {
-			return Promise.resolve("injected")
+			return Promise.resolve(PROVIDER_ID)
 		} else {
 			return Promise.resolve(undefined)
 		}

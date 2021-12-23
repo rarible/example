@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@ledgerhq/iframe-provider": "^0.4.2",
     "@myetherwallet/mewconnect-web-client": "^2.2.0-beta.14",
     "@portis/web3": "^4.0.6",
     "@rarible/sdk": "~0.6.3",

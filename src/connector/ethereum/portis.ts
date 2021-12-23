@@ -1,17 +1,20 @@
-import { combineLatest, defer, Observable } from "rxjs"
-import { first, map, mergeMap, startWith } from "rxjs/operators"
-import type { INetwork, default as Portis } from "@portis/web3"
+import { defer, Observable } from "rxjs"
+import { first, mergeMap, startWith } from "rxjs/operators"
+import type { default as Portis, INetwork } from "@portis/web3"
 import Web3 from "web3"
-import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING, STATE_DISCONNECTED } from "../provider"
+import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING } from "../provider"
 import { EthereumWallet } from "./domain"
 import { Maybe } from "../../common/maybe"
-import { cache, promiseToObservable } from "../common/utils"
+import { cache, noop } from "../common/utils"
+import { connectToWeb3 } from "./common/web3connection"
 
 type PortisInstance = Portis
 type PortisNetwork = string | INetwork
 
-export class PortisConnectionProvider extends AbstractConnectionProvider<"portis", EthereumWallet> {
-	private readonly portis: Observable<PortisInstance>
+const PROVIDER_ID = "portis" as const
+
+export class PortisConnectionProvider extends AbstractConnectionProvider<typeof PROVIDER_ID, EthereumWallet> {
+	private readonly instance: Observable<PortisInstance>
 	private readonly connection: Observable<ConnectionState<EthereumWallet>>
 
 	constructor(
@@ -19,15 +22,13 @@ export class PortisConnectionProvider extends AbstractConnectionProvider<"portis
 		private readonly network: PortisNetwork,
 	) {
 		super()
-		this.portis = cache(() => this._connect())
-		this.connection = defer(() => this.portis.pipe(
-			mergeMap(() => promiseToObservable(this.getWallet())),
-			map(wallet => {
-				if (wallet) {
-					return { status: "connected" as const, connection: wallet }
-				} else {
-					return STATE_DISCONNECTED
-				}
+		this.instance = cache(() => this._connect())
+		this.connection = defer(() => this.instance.pipe(
+			mergeMap(instance => {
+				const web3 = new Web3(instance.provider)
+				return connectToWeb3(web3, instance, {
+					disconnect: () => instance.logout().then(noop).catch(noop)
+				})
 			}),
 			startWith(STATE_CONNECTING),
 		))
@@ -39,15 +40,15 @@ export class PortisConnectionProvider extends AbstractConnectionProvider<"portis
 	}
 
 	getId(): string {
-		return "portis"
+		return PROVIDER_ID
 	}
 
 	getConnection() {
 		return this.connection
 	}
 
-	getOption(): Promise<Maybe<"portis">> {
-		return Promise.resolve("portis")
+	getOption(): Promise<Maybe<typeof PROVIDER_ID>> {
+		return Promise.resolve(PROVIDER_ID)
 	}
 
 	async isAutoConnected(): Promise<boolean> {
@@ -55,26 +56,7 @@ export class PortisConnectionProvider extends AbstractConnectionProvider<"portis
 	}
 
 	async isConnected(): Promise<boolean> {
-		const sdk = await this.portis.pipe(first()).toPromise()
+		const sdk = await this.instance.pipe(first()).toPromise()
 		return true === (await sdk.isLoggedIn()).result
-	}
-
-	private async getWallet(): Promise<Observable<EthereumWallet | undefined>> {
-		const sdk = await this.portis.pipe(first()).toPromise()
-		const web3 = new Web3(sdk.provider)
-
-		const accounts = web3.eth.getAccounts();
-		const chainId = web3.eth.getChainId();
-
-		return combineLatest([accounts, chainId]).pipe(
-			map(([accounts, chainId]) => {
-				const address = accounts[0]
-				if (address) {
-					return { chainId, address, provider: sdk.provider }
-				} else {
-					return undefined
-				}
-			}),
-		)
 	}
 }

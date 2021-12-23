@@ -1,25 +1,33 @@
 import { defer, Observable } from "rxjs"
 import type { WidgetMode } from "fortmatic/dist/cjs/src/core/sdk"
 import { first, mergeMap, startWith } from "rxjs/operators"
-import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING, STATE_DISCONNECTED } from "../provider"
+import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING } from "../provider"
 import { EthereumWallet } from "./domain"
 import Web3 from "web3"
 import { Maybe } from "../../common/maybe"
-import { cache } from "../common/utils"
+import { cache, noop } from "../common/utils"
+import { connectToWeb3 } from "./common/web3connection"
 
 type FM = WidgetMode
 
-export class FortmaticConnectionProvider extends AbstractConnectionProvider<"fortmatic", EthereumWallet> {
-	private readonly fortmatic: Observable<FM>
+const PROVIDER_ID = "fortmatic" as const
+
+export class FortmaticConnectionProvider extends AbstractConnectionProvider<typeof PROVIDER_ID, EthereumWallet> {
+	private readonly instance: Observable<FM>
 	private readonly connection: Observable<ConnectionState<EthereumWallet>>
 
 	constructor(
 		private readonly apiKey: string,
 	) {
 		super()
-		this.fortmatic = cache(() => this._connect())
-		this.connection = defer(() => this.fortmatic.pipe(
-			mergeMap(sdk => getConnection(sdk)),
+		this.instance = cache(() => this._connect())
+		this.connection = defer(() => this.instance.pipe(
+			mergeMap(instance => {
+				const web3 = new Web3(instance.getProvider() as any)
+				return connectToWeb3(web3, instance, {
+					disconnect: () => instance.user.logout().then(noop).catch(noop)
+				})
+			}),
 			startWith(STATE_CONNECTING),
 		))
 	}
@@ -30,15 +38,15 @@ export class FortmaticConnectionProvider extends AbstractConnectionProvider<"for
 	}
 
 	getId(): string {
-		return "fortmatic"
+		return PROVIDER_ID
 	}
 
 	getConnection() {
 		return this.connection
 	}
 
-	getOption(): Promise<Maybe<"fortmatic">> {
-		return Promise.resolve("fortmatic")
+	getOption(): Promise<Maybe<typeof PROVIDER_ID>> {
+		return Promise.resolve(PROVIDER_ID)
 	}
 
 	async isAutoConnected(): Promise<boolean> {
@@ -46,25 +54,7 @@ export class FortmaticConnectionProvider extends AbstractConnectionProvider<"for
 	}
 
 	async isConnected(): Promise<boolean> {
-		const sdk = await this.fortmatic.pipe(first()).toPromise()
+		const sdk = await this.instance.pipe(first()).toPromise()
 		return await sdk.user.isLoggedIn()
 	}
 }
-
-async function getConnection(sdk: WidgetMode): Promise<ConnectionState<EthereumWallet>> {
-	const provider = sdk.getProvider()
-	const web3 = new Web3(provider as any)
-
-	const accounts = await web3.eth.getAccounts();
-	const chainId = await web3.eth.getChainId();
-
-	const address = accounts[0]
-	if (address) {
-		const wallet: EthereumWallet = { chainId, address, provider }
-		const disconnect = () => sdk.user.logout()
-		return { status: "connected" as const, connection: wallet, disconnect }
-	} else {
-		return STATE_DISCONNECTED
-	}
-}
-

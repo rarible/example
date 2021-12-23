@@ -22,6 +22,7 @@ export function promiseToObservable<T>(promise: Promise<Observable<T>>): Observa
 	)
 }
 
+
 export type Listenable<T extends string = string> = {
 	on(event: T, listener: () => void): void
 }
@@ -39,3 +40,5 @@ export function isWithRemoveSubscriber<T extends string = string>(
 ): provider is WithremoveSubscribe<T> {
 	return typeof provider === "object" && provider !== null && "removeListener" in provider
 }
+
+export function noop() {}
