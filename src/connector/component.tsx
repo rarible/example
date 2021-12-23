@@ -17,7 +17,6 @@ export function ConnectorComponent<Connection>({ connector, children }: Connecto
 	} else if (conn.status === "initializing") {
 		return <p>Initializing...</p>
 	} else {
-		console.log("Connected:", conn.disconnect)
 		return (
 			<div>
 				{conn.disconnect && <button onClick={conn.disconnect}>disconnect</button>}

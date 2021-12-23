@@ -118,10 +118,8 @@ class MappedConnectionProvider<O, Connection, NewConnection> extends AbstractCon
 
 	getConnection(): Observable<ConnectionState<NewConnection>> {
 		return this.source.getConnection().pipe(map(state => {
-			if (state === undefined) {
-				return { status: "disconnected" }
-			} else if (state.status === "connected") {
-				return { status: "connected" as const, connection: this.mapper(state.connection) }
+			if (state.status === "connected") {
+				return { status: "connected" as const, connection: this.mapper(state.connection), disconnect: state.disconnect }
 			} else {
 				return state
 			}

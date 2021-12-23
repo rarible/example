@@ -1,6 +1,6 @@
 import type { Observable } from "rxjs"
 import { BehaviorSubject, concat, defer, of } from "rxjs"
-import { distinctUntilChanged, mergeMap, shareReplay, tap } from "rxjs/operators"
+import { distinctUntilChanged, map, mergeMap, shareReplay, tap } from "rxjs/operators"
 import type { ConnectionProvider, ConnectionState } from "./provider"
 import { STATE_CONNECTING, STATE_DISCONNECTED, STATE_INITIALIZING } from "./provider"
 
@@ -29,6 +29,7 @@ export type Connector<Option, Connection> = {
  */
 export interface ConnectorState {
 	getValue(): Promise<string | undefined>
+
 	setValue(value: string | undefined): Promise<void>
 }
 
@@ -38,7 +39,7 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 
 	constructor(
 		private readonly providers: ConnectionProvider<Option, Connection>[],
-		private readonly state?: ConnectorState
+		private readonly state?: ConnectorState,
 	) {
 		this.add = this.add.bind(this)
 		this.connect = this.connect.bind(this)
@@ -49,19 +50,37 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 			this.provider.pipe(
 				distinctUntilChanged(),
 				mergeMap(p => p ? p.getConnection() : of(STATE_DISCONNECTED)),
-			)
+			),
 		).pipe(
 			distinctUntilChanged((c1, c2) => {
 				if (c1 === c2) return true
 				if (c1.status === "connected" && c2.status === "connected") {
 					return c1.connection === c2.connection
 				}
-				return c1.status === c2.status;
+				return c1.status === c2.status
 			}),
 			shareReplay(1),
+			map(conn => {
+				if (conn.status === "connected") {
+					return {
+						...conn,
+						disconnect: async () => {
+							if (conn.disconnect !== undefined) {
+								try {
+									await conn.disconnect()
+								} catch (_) {
+
+								}
+							}
+							this.provider.next(undefined)
+						},
+					}
+				} else {
+					return conn
+				}
+			}),
 			tap(async conn => {
-				console.log("conn", conn)
-				if (conn === undefined) {
+				if (conn.status === "disconnected") {
 					this.provider.next(undefined)
 					const current = await this.state?.getValue()
 					if (current !== undefined) {
@@ -69,7 +88,7 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 						this.state?.setValue(undefined)
 					}
 				}
-			})
+			}),
 		)
 	}
 

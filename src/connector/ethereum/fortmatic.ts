@@ -61,12 +61,7 @@ async function getConnection(sdk: WidgetMode): Promise<ConnectionState<EthereumW
 	const address = accounts[0]
 	if (address) {
 		const wallet: EthereumWallet = { chainId, address, provider }
-		const disconnect = async () => {
-			try {
-				await sdk.user.logout()
-			} catch (_) {
-			}
-		}
+		const disconnect = () => sdk.user.logout()
 		return { status: "connected" as const, connection: wallet, disconnect }
 	} else {
 		return STATE_DISCONNECTED
