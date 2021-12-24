@@ -9,23 +9,26 @@ import { createRaribleSdk } from "@rarible/sdk"
 import { EthereumWallet, TezosWallet } from "@rarible/sdk-wallet"
 import { Web3Ethereum } from "@rarible/web3-ethereum"
 import Web3 from "web3"
-import { TempleConnectionProvider } from "./connector/tezos/temple"
+//import { NetworkType as TezosNetwork } from "@airgap/beacon-sdk"
+//import { TempleConnectionProvider } from "./connector/tezos/temple"
 import { TezosToolkit } from "@taquito/taquito"
-import { templeProvider } from "./connector/tezos/temple-provider"
-import { TempleWallet } from "@temple-wallet/dapp"
+//import { templeProvider } from "./connector/tezos/temple-provider"
+import type { WalletProvider as TezosWalletProvider } from "@taquito/taquito/dist/types/wallet/interface"
 import { FortmaticConnectionProvider } from "./connector/ethereum/fortmatic"
 import { PortisConnectionProvider } from "./connector/ethereum/portis";
 import { TorusConnectionProvider } from "./connector/ethereum/torus";
 import { WalletLinkConnectionProvider } from "./connector/ethereum/walletllink"
 import { MEWConnectionProvider } from "./connector/ethereum/mew"
+import { IframeConnectionProvider } from "./connector/ethereum/iframe"
+import { WalletConnectConnectionProvider } from "./connector/ethereum/walletconnect"
 import './App.css'
 import { Bid } from "./order/bid"
 import { Mint } from "./mint"
 import { Sell } from "./order/sell"
 import { Fill } from "./fill"
 import config from "./config.json"
-import { IframeConnectionProvider } from "./connector/ethereum/iframe"
-import { WalletConnectConnectionProvider } from "./connector/ethereum/walletconnect"
+//import { BeaconConnectionProvider } from "./connector/tezos/beacon"
+//import { TezosProvider } from "tezos-sdk-module/dist/common/base"
 
 
 const allTabs = ["mint", "sell", "bid", "fill"] as const
@@ -76,10 +79,16 @@ const walletConnect: ConnectionProvider<"walletconnect", Wallet> = new WalletCon
 	rpcMap: ethereumRpcMap,
 	networkId: 4
 }).map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
+/*
+const beacon: ConnectionProvider<"beacon", Wallet> = new BeaconConnectionProvider({
+	appName: "Rarible Test",
+	accessNode: "https://tezos-hangzhou-node.rarible.org",
+	network: TezosNetwork.HANGZHOUNET
+}).map(wallet => ({ ...wallet, type: "TEZOS" as const, address: toUnionAddress(`TEZOS:${wallet.address}`) }))
 
 const temple: ConnectionProvider<"temple", Wallet> = new TempleConnectionProvider("Rarible", "granadanet")
 	.map(wallet => ({ ...wallet, type: "TEZOS" as const, address: toUnionAddress(`TEZOS:${wallet.address}`) }))
-
+*/
 type Wallet = {
 	type: "ETHEREUM"
 	address: UnionAddress
@@ -88,15 +97,17 @@ type Wallet = {
 } | {
 	type: "TEZOS"
 	address: UnionAddress
-	wallet: TempleWallet
+	wallet: TezosWalletProvider
 	toolkit: TezosToolkit
+	//provider: TezosProvider
 }
 
 const state: ConnectorState = {
 	async getValue(): Promise<string | undefined> {
 		const value = localStorage.getItem("saved_provider")
 		return value ? value : undefined
-	}, async setValue(value: string | undefined): Promise<void> {
+	},
+	async setValue(value: string | undefined): Promise<void> {
 		localStorage.setItem("saved_provider", value || "")
 	},
 }
@@ -110,7 +121,8 @@ const connector = ConnectorImpl
 	.add(mew)
 	.add(iframe)
 	.add(walletConnect)
-	.add(temple)
+	//.add(temple)
+	//.add(beacon)
 
 function App() {
 	const [tab, setTab] = useState<Tab>("mint")
@@ -119,8 +131,11 @@ function App() {
 		<div className="App">
 			<div style={{ paddingBottom: 10 }}>Connected: {wallet.address}</div>
 			{allTabs.map(t => (<TabButton key={t} tab={t} selected={tab === t} selectTab={setTab}/>))}
-			<div style={{ paddingTop: 10 }}><SelectedTab tab={tab}
-														 sdk={createRaribleSdk(createBlockchainWallet(wallet), "staging")}/>
+			<div style={{ paddingTop: 10 }}>
+				<SelectedTab
+					tab={tab}
+					sdk={createRaribleSdk(createBlockchainWallet(wallet), "staging")}
+				/>
 			</div>
 		</div>
 	)}</ConnectorComponent>
@@ -128,10 +143,9 @@ function App() {
 
 function createBlockchainWallet(wallet: Wallet) {
 	switch (wallet.type) {
-		case "TEZOS": {
-			const tezos = templeProvider(wallet.wallet, wallet.toolkit)
-			return new TezosWallet({ tezos, api: null as any, config: null as any })
-		}
+		/*case "TEZOS": {
+			return new TezosWallet({ tezos: wallet.provider, api: null as any, config: null as any })
+		}*/
 		case "ETHEREUM": {
 			const from = wallet.address.substring("ETHEREUM:".length)
 			return new EthereumWallet(new Web3Ethereum({ web3: new Web3(wallet.provider), from }))

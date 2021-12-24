@@ -7,7 +7,7 @@ export function templeProvider(wallet: TempleWallet, tk: TezosToolkit) : TezosPr
 		const op = await tk.wallet.transfer(arg).send()
 		return { hash: op.opHash, confirmation: async() => { await op.confirmation() } }
 	}
-	const originate = async(arg: OriginateParams) => {
+	const originate: any = async(arg: OriginateParams) => {
 		const op = await tk.wallet.originate(arg).send()
 		return {
 			hash: op.opHash,
@@ -25,7 +25,7 @@ export function templeProvider(wallet: TempleWallet, tk: TezosToolkit) : TezosPr
 		const op = await tk.wallet.batch(args2).send()
 		return { hash: op.opHash, confirmation: async() => { await op.confirmation() } }
 	}
-	const sign = (bytes: string): Promise<string> => {
+	const sign: any = (bytes: string): Promise<string> => {
 		return wallet.sign(bytes)
 	}
 	const address = () => {
@@ -48,5 +48,5 @@ export function templeProvider(wallet: TempleWallet, tk: TezosToolkit) : TezosPr
 		address,
 		public_key,
 		storage
-	}
+	} as any
 }

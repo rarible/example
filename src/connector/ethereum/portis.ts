@@ -2,11 +2,12 @@ import { defer, Observable } from "rxjs"
 import { first, mergeMap, startWith } from "rxjs/operators"
 import type { default as Portis, INetwork } from "@portis/web3"
 import Web3 from "web3"
-import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING } from "../provider"
+import { AbstractConnectionProvider } from "../provider"
 import { EthereumWallet } from "./domain"
 import { Maybe } from "../../common/maybe"
 import { cache, noop } from "../common/utils"
 import { connectToWeb3 } from "./common/web3connection"
+import { ConnectionState, STATE_DISCONNECTED, getStateConnecting } from "../connection-state"
 
 type PortisInstance = Portis
 type PortisNetwork = string | INetwork
@@ -30,7 +31,7 @@ export class PortisConnectionProvider extends AbstractConnectionProvider<typeof 
 					disconnect: () => instance.logout().then(noop).catch(noop)
 				})
 			}),
-			startWith(STATE_CONNECTING),
+			startWith(getStateConnecting(PROVIDER_ID)),
 		))
 	}
 

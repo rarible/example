@@ -1,11 +1,12 @@
-import { defer, Observable } from "rxjs"
-import { first, mergeMap, startWith } from "rxjs/operators"
+import { defer, Observable, of } from "rxjs"
+import { catchError, first, mergeMap, startWith } from "rxjs/operators"
 import Web3 from "web3"
-import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING } from "../provider"
+import { AbstractConnectionProvider } from "../provider"
 import { EthereumWallet } from "./domain"
 import { Maybe } from "../../common/maybe"
 import { cache } from "../common/utils"
 import { connectToWeb3 } from "./common/web3connection"
+import { ConnectionState, STATE_DISCONNECTED, getStateConnecting } from "../connection-state"
 
 export type MEWConfig = {
 	rpcUrl: string
@@ -32,7 +33,8 @@ export class MEWConnectionProvider extends AbstractConnectionProvider<typeof PRO
 					disconnect: () => instance.disconnect()
 				})
 			}),
-			startWith(STATE_CONNECTING),
+			catchError(err => of(STATE_DISCONNECTED)),
+			startWith(getStateConnecting(PROVIDER_ID)),
 		))
 	}
 

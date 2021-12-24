@@ -1,8 +1,8 @@
 import type { Observable } from "rxjs"
 import { BehaviorSubject, concat, defer, of } from "rxjs"
-import { distinctUntilChanged, map, mergeMap, shareReplay, tap } from "rxjs/operators"
-import type { ConnectionProvider, ConnectionState } from "./provider"
-import { STATE_CONNECTING, STATE_DISCONNECTED, STATE_INITIALIZING } from "./provider"
+import { catchError, distinctUntilChanged, map, mergeMap, shareReplay, tap } from "rxjs/operators"
+import type { ConnectionProvider } from "./provider"
+import { ConnectionState, getStateConnecting, STATE_DISCONNECTED, STATE_INITIALIZING } from "./connection-state"
 
 export type ProviderOption<Option, Connection> = {
 	provider: ConnectionProvider<Option, Connection>
@@ -56,6 +56,8 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 				if (c1 === c2) return true
 				if (c1.status === "connected" && c2.status === "connected") {
 					return c1.connection === c2.connection
+				} else if (c1.status === "connecting" && c2.status === "connecting") {
+					return c1.providerId === c2.providerId
 				}
 				return c1.status === c2.status
 			}),
@@ -112,7 +114,7 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 				console.log(`Provider ${provider.getId()} is auto-connected`)
 				this.provider.next(provider)
 				this.state?.setValue(provider.getId())
-				return STATE_CONNECTING
+				return getStateConnecting(provider.getId())
 			}
 		}
 		const selected = await this.state?.getValue()
@@ -123,7 +125,7 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 					if (await provider.isConnected()) {
 						console.log(`Provider ${selected} is connected`)
 						this.provider.next(provider)
-						return STATE_CONNECTING
+						return getStateConnecting(provider.getId())
 					} else {
 						console.log(`Provider ${selected} is not connected`)
 						this.state?.setValue(undefined)
@@ -154,7 +156,7 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 	connect(option: ProviderOption<Option, Connection>): void {
 		const connected = this.provider.value
 		if (connected !== undefined) {
-			throw new Error(`Provider ${connected} already connected`)
+			throw new Error(`Provider ${JSON.stringify(connected)} already connected`)
 		}
 		console.log(`Selected ${option.provider.getId()} provider`)
 		this.provider.next(option.provider)

@@ -1,8 +1,8 @@
 import { Observable } from "rxjs"
-import { ConnectionState, STATE_DISCONNECTED } from "../../provider"
 import { EthereumWallet } from "../domain"
 import Web3 from "web3"
 import { isListenable, isWithRemoveSubscriber } from "../../common/utils"
+import { ConnectionState, STATE_DISCONNECTED } from "../../connection-state"
 
 export function connectToWeb3(web3: Web3, provider: any, options: {
 	disconnect?: () => Promise<void>

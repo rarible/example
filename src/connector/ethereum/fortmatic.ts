@@ -1,12 +1,13 @@
 import { defer, Observable } from "rxjs"
 import type { WidgetMode } from "fortmatic/dist/cjs/src/core/sdk"
 import { first, mergeMap, startWith } from "rxjs/operators"
-import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING } from "../provider"
+import { AbstractConnectionProvider } from "../provider"
 import { EthereumWallet } from "./domain"
 import Web3 from "web3"
 import { Maybe } from "../../common/maybe"
 import { cache, noop } from "../common/utils"
 import { connectToWeb3 } from "./common/web3connection"
+import { ConnectionState, getStateConnecting } from "../connection-state"
 
 type FM = WidgetMode
 
@@ -28,7 +29,7 @@ export class FortmaticConnectionProvider extends AbstractConnectionProvider<type
 					disconnect: () => instance.user.logout().then(noop).catch(noop)
 				})
 			}),
-			startWith(STATE_CONNECTING),
+			startWith(getStateConnecting(PROVIDER_ID)),
 		))
 	}
 

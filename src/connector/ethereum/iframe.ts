@@ -1,10 +1,11 @@
 import { combineLatest, defer, Observable } from "rxjs"
 import { distinctUntilChanged, first, map, mergeMap, shareReplay, startWith } from "rxjs/operators"
 import Web3 from "web3"
-import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING, STATE_DISCONNECTED } from "../provider"
+import { AbstractConnectionProvider, } from "../provider"
 import { EthereumWallet } from "./domain"
 import { Maybe } from "../../common/maybe"
 import { cache, promiseToObservable } from "../common/utils"
+import { ConnectionState, STATE_DISCONNECTED, getStateConnecting } from "../connection-state"
 
 type IframeInstance = any
 
@@ -19,7 +20,7 @@ export class IframeConnectionProvider extends AbstractConnectionProvider<typeof 
 		this.instance = cache(() => this._connect())
 		this.connection = defer(() => this.instance.pipe(
 			mergeMap(getConnect),
-			startWith(STATE_CONNECTING),
+			startWith(getStateConnecting(PROVIDER_ID)),
 		))
 	}
 

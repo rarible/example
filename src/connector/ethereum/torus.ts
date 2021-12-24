@@ -3,11 +3,12 @@ import { first, mergeMap, startWith } from "rxjs/operators"
 import type { default as Torus } from "@toruslabs/torus-embed"
 import Web3 from "web3"
 import type { TorusParams } from "@toruslabs/torus-embed/dist/types/interfaces"
-import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING } from "../provider"
+import { AbstractConnectionProvider } from "../provider"
 import { EthereumWallet } from "./domain"
 import { Maybe } from "../../common/maybe"
 import { cache, noop } from "../common/utils"
 import { connectToWeb3 } from "./common/web3connection"
+import { ConnectionState, STATE_DISCONNECTED, getStateConnecting } from "../connection-state"
 
 export type TorusConfig = TorusParams
 
@@ -29,7 +30,7 @@ export class TorusConnectionProvider extends AbstractConnectionProvider<typeof P
 					disconnect: () => instance.cleanUp().catch(noop)
 				})
 			}),
-			startWith(STATE_CONNECTING),
+			startWith(getStateConnecting(PROVIDER_ID)),
 		))
 	}
 

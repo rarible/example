@@ -1,11 +1,12 @@
-import { combineLatest, defer, Observable } from "rxjs"
-import { distinctUntilChanged, first, map, mergeMap, shareReplay, startWith } from "rxjs/operators"
+import { combineLatest, defer, Observable, of } from "rxjs"
+import { catchError, distinctUntilChanged, first, map, mergeMap, shareReplay, startWith } from "rxjs/operators"
 import Web3 from "web3"
 import type WalletConnectProvider from "@walletconnect/web3-provider"
-import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING, STATE_DISCONNECTED } from "../provider"
+import { AbstractConnectionProvider } from "../provider"
 import { EthereumWallet } from "./domain"
 import { Maybe } from "../../common/maybe"
 import { cache, noop, promiseToObservable } from "../common/utils"
+import { ConnectionState, STATE_DISCONNECTED, getStateConnecting } from "../connection-state"
 
 export type WalletConnectConfig = {
 	infuraId: string
@@ -28,7 +29,8 @@ export class WalletConnectConnectionProvider extends AbstractConnectionProvider<
 		this.instance = cache(() => this._connect())
 		this.connection = defer(() => this.instance.pipe(
 			mergeMap(getConnect),
-			startWith(STATE_CONNECTING),
+			catchError(err => of(STATE_DISCONNECTED)),
+			startWith(getStateConnecting(PROVIDER_ID))
 		))
 	}
 
@@ -56,8 +58,8 @@ export class WalletConnectConnectionProvider extends AbstractConnectionProvider<
 	}
 
 	async isConnected(): Promise<boolean> {
-		const sdk = await this.instance.pipe(first()).toPromise()
-		return sdk.connected
+		const sdk = await this.instance.pipe(first(), catchError(err => of(false))).toPromise()
+		return sdk !== false ? (sdk as any).connected : false
 	}
 }
 

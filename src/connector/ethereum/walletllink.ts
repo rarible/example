@@ -3,11 +3,12 @@ import { first, mergeMap, startWith } from "rxjs/operators"
 import Web3 from "web3"
 import type { WalletLink, WalletLinkOptions } from "walletlink/dist/WalletLink"
 import type { WalletLinkProvider } from "walletlink/dist/provider/WalletLinkProvider"
-import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING } from "../provider"
 import { EthereumWallet } from "./domain"
 import { Maybe } from "../../common/maybe"
 import { cache, promiseToObservable } from "../common/utils"
 import { connectToWeb3 } from "./common/web3connection"
+import { AbstractConnectionProvider } from "../provider"
+import { ConnectionState, getStateConnecting } from "../connection-state"
 
 export type WalletLinkConfig = {
 	url: string
@@ -36,7 +37,7 @@ export class WalletLinkConnectionProvider extends AbstractConnectionProvider<typ
 					})
 				})())
 			}),
-			startWith(STATE_CONNECTING),
+			startWith(getStateConnecting(PROVIDER_ID)),
 		))
 	}
 

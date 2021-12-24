@@ -1,4 +1,4 @@
-import { AbstractConnectionProvider, ConnectionState, STATE_CONNECTING } from "../provider"
+import { AbstractConnectionProvider } from "../provider"
 import type { TempleWallet } from "@temple-wallet/dapp"
 import type { TempleDAppNetwork } from "@temple-wallet/dapp/src/types"
 import { defer, from, Observable, timer } from "rxjs"
@@ -7,6 +7,8 @@ import { concatMap, first, map, mergeMap, startWith } from "rxjs/operators"
 import { Maybe } from "../../common/maybe"
 import { TezosWallet } from "./domain"
 import { cache } from "../common/utils"
+import { ConnectionState, getStateConnecting } from "../connection-state"
+import { templeProvider } from "./temple-provider"
 
 const PROVIDER_ID = "temple" as const
 
@@ -24,7 +26,7 @@ export class TempleConnectionProvider extends AbstractConnectionProvider<typeof 
 		this.connection = defer(() => this.instance.pipe(
 			mergeMap(({templeWallet, tezosToolkit}) => this.toWallet(templeWallet, tezosToolkit)),
 			map(wallet => ({ status: "connected" as const, connection: wallet })),
-			startWith(STATE_CONNECTING),
+			startWith(getStateConnecting(PROVIDER_ID)),
 		))
 	}
 
@@ -39,7 +41,7 @@ export class TempleConnectionProvider extends AbstractConnectionProvider<typeof 
 	private toWallet(wallet: TempleWallet, toolkit: TezosToolkit): Observable<TezosWallet> {
 		return timer(0, 1000).pipe(
 			concatMap(() => from(toolkit.wallet.pkh())),
-			map(address => ({ address, toolkit, wallet })),
+			map(address => ({ address, toolkit, wallet, provider: templeProvider(wallet, toolkit) })),
 		)
 	}
 

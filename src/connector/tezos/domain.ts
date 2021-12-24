@@ -1,8 +1,10 @@
-import { TezosToolkit } from "@taquito/taquito"
-import { TempleWallet } from "@temple-wallet/dapp"
+import type { TezosToolkit } from "@taquito/taquito"
+import type { WalletProvider } from "@taquito/taquito/dist/types/wallet/interface"
+import type { TezosProvider } from "tezos-sdk-module/dist/common/base"
 
 export type TezosWallet = {
 	toolkit: TezosToolkit
-	wallet: TempleWallet
+	wallet: WalletProvider
 	address: string
+	provider: TezosProvider
 }

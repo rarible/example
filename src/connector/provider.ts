@@ -1,30 +1,7 @@
 import type { Observable } from "rxjs"
 import { map } from "rxjs/operators"
 import { Maybe } from "../common/maybe"
-
-export type StateConnected<T> = {
-	status: "connected"
-	connection: T
-	disconnect?: () => Promise<void>
-}
-
-export type StateConnecting = {
-	status: "connecting"
-}
-
-export type StateInitializing = {
-	status: "initializing"
-}
-
-export type StateDisconnected = {
-	status: "disconnected"
-}
-
-export const STATE_CONNECTING: StateConnecting = { status: "connecting" }
-export const STATE_DISCONNECTED: StateDisconnected = { status: "disconnected" }
-export const STATE_INITIALIZING: StateInitializing = { status: "initializing" }
-
-export type ConnectionState<T> = StateConnected<T> | StateConnecting | StateInitializing | StateDisconnected
+import { ConnectionState } from "./connection-state"
 
 /**
  * Provider of the connection.
