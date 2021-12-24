@@ -8,7 +8,7 @@ import { EthereumWallet } from "./domain"
 import { Maybe } from "../../common/maybe"
 import { cache, noop } from "../common/utils"
 import { connectToWeb3 } from "./common/web3connection"
-import { ConnectionState, STATE_DISCONNECTED, getStateConnecting } from "../connection-state"
+import { ConnectionState, getStateConnecting } from "../connection-state"
 
 export type TorusConfig = TorusParams
 

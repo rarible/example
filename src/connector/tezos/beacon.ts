@@ -1,16 +1,14 @@
 import { AbstractConnectionProvider } from "../provider"
-import { defer, from, Observable, timer } from "rxjs"
+import { defer, Observable } from "rxjs"
 import type { TezosToolkit } from "@taquito/taquito"
 import type { BeaconWallet } from "@taquito/beacon-wallet"
-import { concatMap, first, map, mergeMap, startWith } from "rxjs/operators"
+import { first, mergeMap, startWith } from "rxjs/operators"
 import { Maybe } from "../../common/maybe"
 import { TezosWallet } from "./domain"
 import { cache } from "../common/utils"
-import { ConnectionState, getStateConnecting, STATE_DISCONNECTED, StateConnected } from "../connection-state"
+import { ConnectionState, getStateConnecting, STATE_DISCONNECTED } from "../connection-state"
 import type { NetworkType as TezosNetwork } from "@airgap/beacon-sdk"
-import { EthereumWallet } from "../ethereum/domain"
 import { beaconProvider } from "./beacon-provider"
-
 
 export type BeaconConfig = {
 	appName: string,
@@ -31,7 +29,7 @@ export class BeaconConnectionProvider extends AbstractConnectionProvider<typeof 
 		this.connection = defer(() => this.instance.pipe(
 			mergeMap(({ beaconWallet, tezosToolkit }) => {
 				return new Observable<ConnectionState<TezosWallet>>(subscriber => {
-					/*const disconnect = async () => {
+					const disconnect = async () => {
 						await beaconWallet.disconnect()
 						await beaconWallet.client.removeAllPeers()
 						await beaconWallet.client.removeAllAccounts()
@@ -39,15 +37,17 @@ export class BeaconConnectionProvider extends AbstractConnectionProvider<typeof 
 						subscriber.next(STATE_DISCONNECTED)
 					}
 
-					Promise.all(this.getAddress(beaconWallet), beaconProvider(beaconWallet, tezosToolkit)).then(([address, provider]) => {
-						subscriber.next({
-							status: "connected" as const,
-							connection: { address, toolkit: tezosToolkit, wallet: beaconWallet, provider },
-							disconnect
-						})
-					}).catch(() => {*/
+					Promise.all([this.getAddress(beaconWallet), beaconProvider(beaconWallet, tezosToolkit)]).then(
+						([address, provider]) => {
+							subscriber.next({
+								status: "connected" as const,
+								connection: { address, toolkit: tezosToolkit, wallet: beaconWallet, provider },
+								disconnect
+							})
+						}
+					).catch(() => {
 						subscriber.next(STATE_DISCONNECTED)
-					//})
+					})
 				})
 			}),
 			startWith(getStateConnecting(PROVIDER_ID)),
@@ -95,21 +95,6 @@ export class BeaconConnectionProvider extends AbstractConnectionProvider<typeof 
 			beaconWallet: wallet,
 			tezosToolkit: tk
 		}
-
-		/*let address: Promise<TezosAddress>
-		const activeAccount = await wallet.client.getActiveAccount()
-		if (activeAccount) {
-			address = Promise.resolve(toTezosAddress(activeAccount.address))
-		} else {
-			await wallet.requestPermissions({
-				network: {
-					type: this.config.network,
-					rpcUrl: this.config.accessNode,
-				},
-			})
-			address = wallet.getPKH().then(x => toTezosAddress(x))
-		}*/
-
 	}
 
 	getOption(): Promise<Maybe<typeof PROVIDER_ID>> {
