@@ -1,6 +1,6 @@
 import type { Observable } from "rxjs"
 import { BehaviorSubject, concat, defer, of } from "rxjs"
-import { catchError, distinctUntilChanged, map, mergeMap, shareReplay, tap } from "rxjs/operators"
+import { distinctUntilChanged, map, mergeMap, shareReplay, tap } from "rxjs/operators"
 import type { ConnectionProvider } from "./provider"
 import { ConnectionState, getStateConnecting, STATE_DISCONNECTED, STATE_INITIALIZING } from "./connection-state"
 
