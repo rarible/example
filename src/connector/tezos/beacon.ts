@@ -27,12 +27,12 @@ export class BeaconConnectionProvider extends AbstractConnectionProvider<typeof 
 		super()
 		this.instance = cache(() => this._connect())
 		this.connection = defer(() => this.instance.pipe(
-			mergeMap(({ beaconWallet, tezosToolkit }) => this.toWallet(beaconWallet, tezosToolkit)),
+			mergeMap(({ beaconWallet, tezosToolkit }) => this.toConnectState(beaconWallet, tezosToolkit)),
 			startWith(getStateConnecting(PROVIDER_ID)),
 		))
 	}
 
-	private toWallet(beaconWallet: BeaconWallet, tezosToolkit: TezosToolkit): Observable<ConnectionState<TezosWallet>> {
+	private toConnectState(beaconWallet: BeaconWallet, tezosToolkit: TezosToolkit): Observable<ConnectionState<TezosWallet>> {
 		return new Observable<ConnectionState<TezosWallet>>(subscriber => {
 			const disconnect = async () => {
 				await beaconWallet.disconnect()
@@ -109,6 +109,7 @@ export class BeaconConnectionProvider extends AbstractConnectionProvider<typeof 
 
 	async isConnected(): Promise<boolean> {
 		const instance = await this.instance.pipe(first()).toPromise()
-		return !!(await instance.beaconWallet.getPKH())
+		const account = await instance.beaconWallet.client.getActiveAccount()
+		return !!account
 	}
 }

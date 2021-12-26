@@ -1920,7 +1920,7 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@onflow/fcl@~0.0.76":
+"@onflow/fcl@^0.0.77", "@onflow/fcl@~0.0.76":
   version "0.0.77"
   resolved "https://registry.yarnpkg.com/@onflow/fcl/-/fcl-0.0.77.tgz#2a2da9ec8f90e0cf012d9a459a3472b57e416549"
   integrity sha512-hgFW51Va29KwlzhDy6Fm15UesfXluRTR5RJn+zrm5d5HFfkquaxKOnMGT5waKVFn5u4THQIE6v+OnaDDchGNpg==

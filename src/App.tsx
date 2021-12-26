@@ -20,13 +20,16 @@ import { MEWConnectionProvider } from "./connector/ethereum/mew"
 import { IframeConnectionProvider } from "./connector/ethereum/iframe"
 import { WalletConnectConnectionProvider } from "./connector/ethereum/walletconnect"
 import { BeaconConnectionProvider } from "./connector/tezos/beacon"
+import type { TezosProvider } from "tezos-sdk-module/dist/common/base"
+import { FclConnectionProvider } from "./connector/flow/fcl"
+import { Fcl } from "@rarible/fcl-types"
+import { FlowWallet } from "@rarible/sdk-wallet"
 import './App.css'
 import { Bid } from "./order/bid"
 import { Mint } from "./mint"
 import { Sell } from "./order/sell"
 import { Fill } from "./fill"
 import config from "./config.json"
-import { TezosProvider } from "tezos-sdk-module/dist/common/base"
 
 
 const allTabs = ["mint", "sell", "bid", "fill"] as const
@@ -84,6 +87,14 @@ const beacon: ConnectionProvider<"beacon", Wallet> = new BeaconConnectionProvide
 	network: TezosNetwork.HANGZHOUNET
 }).map(wallet => ({ ...wallet, type: "TEZOS" as const, address: toUnionAddress(`TEZOS:${wallet.address}`) }))
 
+const fcl: ConnectionProvider<"fcl", Wallet> = new FclConnectionProvider({
+	accessNode: "https://access-testnet.onflow.org",
+	walletDiscovery: "https://flow-wallet-testnet.blocto.app/authn",
+	network: "testnet",
+	applicationTitle: "Rari Test",
+	applicationIcon: "https://rarible.com/favicon.png?2d8af2455958e7f0c812"
+}).map(wallet => ({ ...wallet, type: "FLOW" as const, address: toUnionAddress(`FLOW:${wallet.address}`)}))
+
 type Wallet = {
 	type: "ETHEREUM"
 	address: UnionAddress
@@ -95,6 +106,10 @@ type Wallet = {
 	wallet: TezosWalletProvider
 	toolkit: TezosToolkit
 	provider: TezosProvider
+} | {
+	type: "FLOW"
+	fcl: Fcl
+	address: UnionAddress
 }
 
 const state: ConnectorState = {
@@ -117,6 +132,7 @@ const connector = ConnectorImpl
 	.add(iframe)
 	.add(walletConnect)
 	.add(beacon)
+	.add(fcl)
 
 
 function createBlockchainWallet(wallet: Wallet) {
@@ -127,6 +143,9 @@ function createBlockchainWallet(wallet: Wallet) {
 		case "ETHEREUM": {
 			const from = wallet.address.substring("ETHEREUM:".length)
 			return new EthereumWallet(new Web3Ethereum({ web3: new Web3(wallet.provider), from }))
+		}
+		case "FLOW": {
+			return new FlowWallet(wallet.fcl)
 		}
 		default:
 			throw new Error(`Unknown type: ${typeof wallet}`)
