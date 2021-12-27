@@ -5,7 +5,7 @@ import { AbstractConnectionProvider, } from "../provider"
 import { EthereumWallet } from "./domain"
 import { Maybe } from "../../common/maybe"
 import { cache, promiseToObservable } from "../common/utils"
-import { ConnectionState, STATE_DISCONNECTED, getStateConnecting } from "../connection-state"
+import { ConnectionState, STATE_DISCONNECTED, getStateConnecting, getStateConnected } from "../connection-state"
 
 type IframeInstance = any
 
@@ -20,7 +20,7 @@ export class IframeConnectionProvider extends AbstractConnectionProvider<typeof 
 		this.instance = cache(() => this._connect())
 		this.connection = defer(() => this.instance.pipe(
 			mergeMap(getConnect),
-			startWith(getStateConnecting(PROVIDER_ID)),
+			startWith(getStateConnecting({ providerId: PROVIDER_ID })),
 		))
 	}
 
@@ -59,7 +59,7 @@ function getConnect(instance: IframeInstance): Observable<ConnectionState<Ethere
 		map(([address, chainId]) => {
 			if (address) {
 				const wallet: EthereumWallet = { chainId, address, provider: web3 }
-				return { status: "connected" as const, connection: wallet }
+				return getStateConnected({ connection: wallet })
 			} else {
 				return STATE_DISCONNECTED
 			}

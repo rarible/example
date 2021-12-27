@@ -3,7 +3,7 @@ import React, { useCallback, useState } from 'react'
 import { IRaribleSdk } from "@rarible/sdk/build/domain"
 import { ConnectorComponent } from "./connector/component"
 import { ConnectionProvider, ConnectorImpl, ConnectorState } from "./connector"
-import { InjectedWeb3ConnectionProvider } from "./connector/ethereum/injected"
+import { DappType, InjectedWeb3ConnectionProvider } from "./connector/ethereum/injected"
 import { toUnionAddress, UnionAddress } from "@rarible/types"
 import { createRaribleSdk } from "@rarible/sdk"
 import { EthereumWallet, TezosWallet } from "@rarible/sdk-wallet"
@@ -42,7 +42,7 @@ const ethereumRpcMap: Record<number, string> = {
 	17: "https://node-e2e.rarible.com",
 }
 
-const injected: ConnectionProvider<"injected", Wallet> = new InjectedWeb3ConnectionProvider()
+const injected: ConnectionProvider<DappType, Wallet> = new InjectedWeb3ConnectionProvider()
 	.map(wallet => ({ ...wallet, type: "ETHEREUM" as const, address: toUnionAddress(`ETHEREUM:${wallet.address}`) }))
 
 const fortmatic: ConnectionProvider<"fortmatic", Wallet> = new FortmaticConnectionProvider(config.formatic.apiKey)

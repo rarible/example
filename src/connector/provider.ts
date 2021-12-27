@@ -1,7 +1,7 @@
 import type { Observable } from "rxjs"
 import { map } from "rxjs/operators"
 import { Maybe } from "../common/maybe"
-import { ConnectionState } from "./connection-state"
+import { ConnectionState, getStateConnected } from "./connection-state"
 
 /**
  * Provider of the connection.
@@ -96,7 +96,10 @@ class MappedConnectionProvider<O, Connection, NewConnection> extends AbstractCon
 	getConnection(): Observable<ConnectionState<NewConnection>> {
 		return this.source.getConnection().pipe(map(state => {
 			if (state.status === "connected") {
-				return { status: "connected" as const, connection: this.mapper(state.connection), disconnect: state.disconnect }
+				return getStateConnected({
+					connection: this.mapper(state.connection),
+					disconnect: state.disconnect
+				})
 			} else {
 				return state
 			}

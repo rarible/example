@@ -4,7 +4,7 @@ import { defer, Observable } from "rxjs"
 import { first, mergeMap, startWith } from "rxjs/operators"
 import { Maybe } from "../../common/maybe"
 import { cache } from "../common/utils"
-import { ConnectionState, getStateConnecting, STATE_DISCONNECTED } from "../connection-state"
+import { ConnectionState, getStateConnected, getStateConnecting, STATE_DISCONNECTED } from "../connection-state"
 import { FlowWallet } from "./domain"
 
 export type FclConfig = {
@@ -28,7 +28,7 @@ export class FclConnectionProvider extends AbstractConnectionProvider<typeof PRO
 		this.instance = cache(() => this._connect())
 		this.connection = defer(() => this.instance.pipe(
 			mergeMap((instance) => this.toConnectState(instance)),
-			startWith(getStateConnecting(PROVIDER_ID)),
+			startWith(getStateConnecting({ providerId: PROVIDER_ID })),
 		))
 	}
 
@@ -47,11 +47,10 @@ export class FclConnectionProvider extends AbstractConnectionProvider<typeof PRO
 						address: auth.addr
 					}
 
-					subscriber.next({
-						status: "connected",
+					subscriber.next(getStateConnected({
 						connection: wallet,
 						disconnect
-					})
+					}))
 				}
 			}).catch(() => {
 				subscriber.next(STATE_DISCONNECTED)

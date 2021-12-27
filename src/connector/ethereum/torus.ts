@@ -30,7 +30,7 @@ export class TorusConnectionProvider extends AbstractConnectionProvider<typeof P
 					disconnect: () => instance.cleanUp().catch(noop)
 				})
 			}),
-			startWith(getStateConnecting(PROVIDER_ID)),
+			startWith(getStateConnecting({ providerId: PROVIDER_ID })),
 		))
 	}
 

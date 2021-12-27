@@ -37,7 +37,7 @@ function Options<C>({ connector, connectionState }: OptionsProps<C>) {
 			<p>Connect to:</p>
 			{options.map(o => <div key={o.option}>
 				<button onClick={() => connector.connect(o)}>{o.option}</button>
-				{connectionState.status === "connecting" && connectionState.providerId === o.option ? "Connecting..." : null}
+				{connectionState.status === "connecting" && connectionState.providerId === o.provider.getId() ? "Connecting..." : null}
 			</div>)}
 		</div>
 	)}</Rx>

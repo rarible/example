@@ -31,7 +31,7 @@ export class PortisConnectionProvider extends AbstractConnectionProvider<typeof 
 					disconnect: () => instance.logout().then(noop).catch(noop)
 				})
 			}),
-			startWith(getStateConnecting(PROVIDER_ID)),
+			startWith(getStateConnecting({ providerId: PROVIDER_ID })),
 		))
 	}
 

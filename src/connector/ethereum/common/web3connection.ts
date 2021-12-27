@@ -2,7 +2,7 @@ import { Observable } from "rxjs"
 import { EthereumWallet } from "../domain"
 import Web3 from "web3"
 import { isListenable, isWithRemoveSubscriber } from "../../common/utils"
-import { ConnectionState, STATE_DISCONNECTED } from "../../connection-state"
+import { ConnectionState, getStateConnected, STATE_DISCONNECTED } from "../../connection-state"
 
 export function connectToWeb3(web3: Web3, provider: any, options: {
 	disconnect?: () => Promise<void>
@@ -10,7 +10,6 @@ export function connectToWeb3(web3: Web3, provider: any, options: {
 	return new Observable<ConnectionState<EthereumWallet>>(subscriber => {
 		const disconnect = () => {
 			subscriber.next(STATE_DISCONNECTED)
-			//subscriber.complete()
 		}
 
 		if (isListenable(provider)) {
@@ -30,7 +29,7 @@ export function connectToWeb3(web3: Web3, provider: any, options: {
 			const address = accounts[0]
 			if (address) {
 				const wallet: EthereumWallet = { chainId, address, provider: web3 }
-				subscriber.next({ status: "connected" as const, connection: wallet, disconnect: options.disconnect })
+				subscriber.next(getStateConnected({ connection: wallet, disconnect: options.disconnect }))
 			} else {
 				disconnect()
 			}

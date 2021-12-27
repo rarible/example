@@ -6,7 +6,7 @@ import { first, mergeMap, startWith } from "rxjs/operators"
 import { Maybe } from "../../common/maybe"
 import { TezosWallet } from "./domain"
 import { cache } from "../common/utils"
-import { ConnectionState, getStateConnecting, STATE_DISCONNECTED } from "../connection-state"
+import { ConnectionState, getStateConnected, getStateConnecting, STATE_DISCONNECTED } from "../connection-state"
 import type { NetworkType as TezosNetwork } from "@airgap/beacon-sdk"
 import { beaconProvider } from "./beacon-provider"
 
@@ -28,7 +28,7 @@ export class BeaconConnectionProvider extends AbstractConnectionProvider<typeof 
 		this.instance = cache(() => this._connect())
 		this.connection = defer(() => this.instance.pipe(
 			mergeMap(({ beaconWallet, tezosToolkit }) => this.toConnectState(beaconWallet, tezosToolkit)),
-			startWith(getStateConnecting(PROVIDER_ID)),
+			startWith(getStateConnecting({ providerId: PROVIDER_ID })),
 		))
 	}
 
@@ -44,11 +44,10 @@ export class BeaconConnectionProvider extends AbstractConnectionProvider<typeof 
 
 			Promise.all([this.getAddress(beaconWallet), beaconProvider(beaconWallet, tezosToolkit)]).then(
 				([address, provider]) => {
-					subscriber.next({
-						status: "connected" as const,
+					subscriber.next(getStateConnected({
 						connection: { address, toolkit: tezosToolkit, wallet: beaconWallet, provider },
 						disconnect
-					})
+					}))
 				}
 			).catch(() => {
 				subscriber.next(STATE_DISCONNECTED)

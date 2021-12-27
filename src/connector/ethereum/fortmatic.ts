@@ -29,7 +29,7 @@ export class FortmaticConnectionProvider extends AbstractConnectionProvider<type
 					disconnect: () => instance.user.logout().then(noop).catch(noop)
 				})
 			}),
-			startWith(getStateConnecting(PROVIDER_ID)),
+			startWith(getStateConnecting({ providerId: PROVIDER_ID })),
 		))
 	}
 

@@ -1,12 +1,12 @@
-import { defer, Observable, of } from "rxjs"
-import { catchError, first, mergeMap, startWith } from "rxjs/operators"
+import { defer, Observable } from "rxjs"
+import { first, mergeMap, startWith } from "rxjs/operators"
 import Web3 from "web3"
 import { AbstractConnectionProvider } from "../provider"
 import { EthereumWallet } from "./domain"
 import { Maybe } from "../../common/maybe"
 import { cache } from "../common/utils"
 import { connectToWeb3 } from "./common/web3connection"
-import { ConnectionState, STATE_DISCONNECTED, getStateConnecting } from "../connection-state"
+import { ConnectionState, getStateConnecting } from "../connection-state"
 
 export type MEWConfig = {
 	rpcUrl: string
@@ -33,8 +33,7 @@ export class MEWConnectionProvider extends AbstractConnectionProvider<typeof PRO
 					disconnect: () => instance.disconnect()
 				})
 			}),
-			catchError(err => of(STATE_DISCONNECTED)),
-			startWith(getStateConnecting(PROVIDER_ID)),
+			startWith(getStateConnecting({ providerId: PROVIDER_ID })),
 		))
 	}
 
@@ -44,8 +43,9 @@ export class MEWConnectionProvider extends AbstractConnectionProvider<typeof PRO
 			chainId: this.config.networkId,
 			rpcUrl: this.config.rpcUrl,
 			noUrlCheck: true,
-			windowClosedError: true,
+			windowClosedError: true
 		})
+		await provider.enable()
 		return provider
 	}
 
@@ -67,6 +67,6 @@ export class MEWConnectionProvider extends AbstractConnectionProvider<typeof PRO
 
 	async isConnected(): Promise<boolean> {
 		const instance = await this.instance.pipe(first()).toPromise()
-		return instance.Provider.isConnected
+		return !!instance.Provider?.isConnected
 	}
 }

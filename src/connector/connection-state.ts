@@ -21,12 +21,12 @@ export type StateDisconnected = {
 export const STATE_DISCONNECTED: StateDisconnected = { status: "disconnected" }
 export const STATE_INITIALIZING: StateInitializing = { status: "initializing" }
 
-export function getStateConnected<T>(connection: T, disconnect: () => Promise<void>): StateConnected<T> {
-	return { status: "connected", connection, disconnect }
+export function getStateConnected<T>(params: Omit<StateConnected<T>, "status"> ): StateConnected<T> {
+	return { status: "connected", ...params }
 }
 
-export function getStateConnecting(providerId: string): StateConnecting {
-	return { status: "connecting", providerId }
+export function getStateConnecting(params: Omit<StateConnecting, "status">): StateConnecting {
+	return { status: "connecting", ...params }
 }
 
 export type ConnectionState<T> = StateConnected<T> | StateConnecting | StateInitializing | StateDisconnected

@@ -1,6 +1,6 @@
 import type { Observable } from "rxjs"
 import { BehaviorSubject, concat, defer, of } from "rxjs"
-import { distinctUntilChanged, map, mergeMap, shareReplay, tap } from "rxjs/operators"
+import { catchError, distinctUntilChanged, first, map, mergeMap, shareReplay, tap } from "rxjs/operators"
 import type { ConnectionProvider } from "./provider"
 import { ConnectionState, getStateConnecting, STATE_DISCONNECTED, STATE_INITIALIZING } from "./connection-state"
 
@@ -49,7 +49,19 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 			defer(() => this.checkAutoConnect()),
 			this.provider.pipe(
 				distinctUntilChanged(),
-				mergeMap(p => p ? p.getConnection() : of(STATE_DISCONNECTED)),
+				mergeMap(p => {
+					if (p) {
+						try {
+							return p.getConnection().pipe(
+								catchError((err) => of(STATE_DISCONNECTED))
+							)
+						} catch (e) {
+							return of(STATE_DISCONNECTED)
+						}
+					} else {
+						return of(STATE_DISCONNECTED)
+					}
+				}),
 			),
 		).pipe(
 			distinctUntilChanged((c1, c2) => {
@@ -107,32 +119,36 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 
 	private async checkAutoConnect(): Promise<ConnectionState<Connection>> {
 		console.log("Connector initialized. Checking auto-(re)connect")
-		const promises = this.providers.map(it => ({ provider: it, autoConnected: it.isAutoConnected() }))
-		for (const { provider, autoConnected } of promises) {
-			const value = await autoConnected
-			if (value) {
-				console.log(`Provider ${provider.getId()} is auto-connected`)
-				this.provider.next(provider)
-				this.state?.setValue(provider.getId())
-				return getStateConnecting(provider.getId())
+		try {
+			const promises = this.providers.map(it => ({ provider: it, autoConnected: it.isAutoConnected() }))
+			for (const { provider, autoConnected } of promises) {
+				const value = await autoConnected
+				if (value) {
+					console.log(`Provider ${provider.getId()} is auto-connected`)
+					this.provider.next(provider)
+					this.state?.setValue(provider.getId())
+					return getStateConnecting({ providerId: provider.getId() })
+				}
 			}
-		}
-		const selected = await this.state?.getValue()
-		if (selected !== undefined) {
-			for (const provider of this.providers) {
-				if (selected === provider.getId()) {
-					console.log(`Previously connected provider found: ${selected}. checking if is connected`)
-					if (await provider.isConnected()) {
-						console.log(`Provider ${selected} is connected`)
-						this.provider.next(provider)
-						return getStateConnecting(provider.getId())
-					} else {
-						console.log(`Provider ${selected} is not connected`)
-						this.state?.setValue(undefined)
-						return STATE_DISCONNECTED
+			const selected = await this.state?.getValue()
+			if (selected !== undefined) {
+				for (const provider of this.providers) {
+					if (selected === provider.getId()) {
+						console.log(`Previously connected provider found: ${selected}. checking if is connected`)
+						if (await provider.isConnected()) {
+							console.log(`Provider ${selected} is connected`)
+							this.provider.next(provider)
+							return getStateConnecting({ providerId: provider.getId() })
+						} else {
+							console.log(`Provider ${selected} is not connected`)
+							this.state?.setValue(undefined)
+							return STATE_DISCONNECTED
+						}
 					}
 				}
 			}
+		} catch (e) {
+			console.log("Autoconnect failed: " + e)
 		}
 		return STATE_DISCONNECTED
 	}
@@ -153,11 +169,13 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 		return result
 	}
 
-	connect(option: ProviderOption<Option, Connection>): void {
+	async connect(option: ProviderOption<Option, Connection>): Promise<void> {
 		const connected = this.provider.value
-		if (connected !== undefined) {
+		const connectionState = await this.connection.pipe(first()).toPromise();
+		if (connected !== undefined && connectionState.status === "connected") {
 			throw new Error(`Provider ${JSON.stringify(connected)} already connected`)
 		}
+
 		console.log(`Selected ${option.provider.getId()} provider`)
 		this.provider.next(option.provider)
 		this.state?.setValue(option.provider.getId())

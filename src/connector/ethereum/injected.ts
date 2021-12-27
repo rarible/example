@@ -4,12 +4,27 @@ import { AbstractConnectionProvider } from "../provider"
 import { Maybe } from "../../common/maybe"
 import { EthereumWallet } from "./domain"
 import { promiseToObservable } from "../common/utils"
-import { ConnectionState, STATE_DISCONNECTED, getStateConnecting } from "../connection-state"
+import { ConnectionState, STATE_DISCONNECTED, getStateConnecting, getStateConnected } from "../connection-state"
 
+export enum DappType {
+	Metamask = "Metamask",
+	Trust = "Trust",
+	GoWallet = "GoWallet",
+	AlphaWallet = "AlphaWallet",
+	Status = "Status",
+	Coinbase = "Coinbase",
+	Cipher = "Cipher",
+	Mist = "Mist",
+	Parity = "Parity",
+	ImToken = "ImToken",
+	Dapper = "Dapper",
+	Mock = "Mock",
+	Generic = "Web3",
+}
 
 const PROVIDER_ID = "injected" as const
 
-export class InjectedWeb3ConnectionProvider extends AbstractConnectionProvider<typeof PROVIDER_ID, EthereumWallet> {
+export class InjectedWeb3ConnectionProvider extends AbstractConnectionProvider<DappType, EthereumWallet> {
 	private readonly connection: Observable<ConnectionState<EthereumWallet>>
 
 	constructor() {
@@ -18,12 +33,21 @@ export class InjectedWeb3ConnectionProvider extends AbstractConnectionProvider<t
 			mergeMap(() => promiseToObservable(getWalletAsync())),
 			map((wallet) => {
 				if (wallet) {
-					return { status: "connected" as const, connection: wallet }
+					const disconnect = () => {
+						if ("close" in wallet.provider) {
+							return wallet.provider.close()
+						}
+						if ("disconnect" in wallet.provider) {
+							return wallet.provider.disconnect()
+						}
+						return Promise.resolve()
+					}
+					return getStateConnected({ connection: wallet, disconnect })
 				} else {
 					return STATE_DISCONNECTED
 				}
 			}),
-			startWith(getStateConnecting(PROVIDER_ID)),
+			startWith(getStateConnecting({ providerId: PROVIDER_ID })),
 		)
 	}
 
@@ -35,19 +59,15 @@ export class InjectedWeb3ConnectionProvider extends AbstractConnectionProvider<t
 		return this.connection
 	}
 
-	getOption(): Promise<Maybe<typeof PROVIDER_ID>> {
-		//todo handle injected provider types (find out what exact provider is used)
-		// metamask, dapper etc
+	getOption(): Promise<Maybe<DappType>> {
 		const provider = getInjectedProvider()
-		if (provider !== undefined) {
-			return Promise.resolve(PROVIDER_ID)
-		} else {
-			return Promise.resolve(undefined)
-		}
+		return Promise.resolve(getDappType(provider))
 	}
 
 	isAutoConnected(): Promise<boolean> {
-		return Promise.resolve(false)
+		const provider = getInjectedProvider()
+		const dapp = getDappType(provider)
+		return Promise.resolve(isDappSupportAutoconnect(dapp))
 	}
 
 	async isConnected(): Promise<boolean> {
@@ -165,4 +185,37 @@ async function ethChainId(provider: any): Promise<string> {
 	} else {
 		throw new Error("Not supported: eth_chainId")
 	}
+}
+
+function getDappType(provider: any): Maybe<DappType> {
+	if (provider !== undefined) {
+		if (provider) {
+			if (provider.isImToken) return DappType.ImToken
+			if (provider.isDapper) return DappType.Dapper
+			if (provider.isMetaMask) return DappType.Metamask
+			if (provider.isTrust) return DappType.Trust
+			if (provider.isGoWallet) return DappType.GoWallet
+			if (provider.isAlphaWallet) return DappType.AlphaWallet
+			if (provider.isStatus) return DappType.Status
+			if (provider.isToshi) return DappType.Coinbase
+			if (typeof (window as any).__CIPHER__ !== "undefined") return DappType.Cipher
+			if (provider.constructor.name === "EthereumProvider") return DappType.Mist
+			if (provider.constructor.name === "Web3FrameProvider") return DappType.Parity
+			if (provider.constructor.name === "Web3ProviderEngine") return DappType.Mock
+			return DappType.Generic
+		}
+	}
+
+	return undefined
+}
+
+function isDappSupportAutoconnect(dapp: Maybe<DappType>): boolean {
+	if (!dapp) {
+		return false
+	}
+
+	const unsupportedDappTypes: Set<DappType> = new Set([DappType.Dapper])
+	const disabledAutoLogin = new Set([DappType.Generic, DappType.Metamask])
+
+	return !(unsupportedDappTypes.has(dapp) || disabledAutoLogin.has(dapp))
 }

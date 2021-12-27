@@ -21,12 +21,12 @@ describe("Connector", () => {
 
 		const connector = ConnectorImpl.create(p1).add(p2)
 		const [opt1, opt2] = await connector.options
-		connector.connect(opt1)
-		expect(() => connector.connect(opt2)).toThrow()
+		await connector.connect(opt1)
+		expect(async () => await connector.connect(opt2)).toThrow()
 
 		conn1.next(undefined)
-		expect(() => connector.connect(opt2)).not.toThrow()
-		expect(() => connector.connect(opt2)).not.toThrow()
+		expect(async () => await connector.connect(opt2)).not.toThrow()
+		expect(async () => await connector.connect(opt2)).not.toThrow()
 	})
 
 	test("provider can be auto-connected", async () => {

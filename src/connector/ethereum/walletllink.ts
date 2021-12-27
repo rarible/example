@@ -37,7 +37,7 @@ export class WalletLinkConnectionProvider extends AbstractConnectionProvider<typ
 					})
 				})())
 			}),
-			startWith(getStateConnecting(PROVIDER_ID)),
+			startWith(getStateConnecting({ providerId: PROVIDER_ID })),
 		))
 	}
 
