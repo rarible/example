@@ -49,15 +49,11 @@ export class ConnectorImpl<Option, Connection> implements Connector<Option, Conn
 			defer(() => this.checkAutoConnect()),
 			this.provider.pipe(
 				distinctUntilChanged(),
-				mergeMap(p => {
-					if (p) {
-						try {
-							return p.getConnection().pipe(
-								catchError((err) => of(STATE_DISCONNECTED))
-							)
-						} catch (e) {
-							return of(STATE_DISCONNECTED)
-						}
+				mergeMap(provider => {
+					if (provider) {
+						return provider.getConnection().pipe(
+							catchError((err) => of(STATE_DISCONNECTED))
+						)
 					} else {
 						return of(STATE_DISCONNECTED)
 					}
