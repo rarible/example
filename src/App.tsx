@@ -1,54 +1,35 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, {useCallback, useEffect, useState} from 'react'
+import React, { useCallback, useState } from 'react'
+import { IRaribleSdk } from "@rarible/sdk/build/domain"
 import './App.css'
-import {Mint} from "./mint"
-import {Sell} from "./order/sell"
-import {useSdk} from "./sdk/use-sdk"
-import {IRaribleSdk} from "@rarible/sdk/build/domain"
-import {Bid} from "./order/bid"
-import {Collection} from "./collection";
-import {Maybe} from "./common/maybe";
-import {Blockchain} from "@rarible/api-client";
-import {AcceptBid} from "./acceptBid";
-import {Buy} from "./buy";
+import { Mint } from "./mint"
+import { Sell } from "./order/sell"
+import { Bid } from "./order/bid"
+import { Collection } from "./collection"
+import { AcceptBid } from "./acceptBid"
+import { Buy } from "./buy"
+import { SdkWalletConnector } from "./sdk/sdk-wallet-connector"
+import { connector } from "./connectors-setup"
 
 const allTabs = ["collection", "mint", "sell", "buy", "bid", "accept bid"] as const
 type Tab = typeof allTabs[number]
 
 function App() {
 	const [tab, setTab] = useState<Tab>("collection")
-	const [address, setAddress] = useState<Maybe<string>>(undefined)
-	const { sdk, connect, wallet } = useSdk("staging")
 
-	useEffect(() => {
-		switch (wallet?.blockchain) {
-			case Blockchain.ETHEREUM:
-				wallet?.ethereum.getFrom()
-					.then((address) => setAddress(address))
-					.catch(() => setAddress(undefined))
-				break
-			default:
-				setAddress(undefined)
-		}
-	}, [wallet])
-
-	if (!sdk || !wallet) {
-		return <div>
-			<button onClick={connect}>connect</button>
-		</div>
-	}
-
-	return (
-		<div className="App">
-			<div style={{paddingBottom: 10}}>
-				Connected: {address ?? "not connected"}
+	return <SdkWalletConnector connector={connector}>
+		{(sdk, walletAddress, connection) => {
+			return <div className="App">
+				<div style={{paddingBottom: 10}}>
+					Connected: {walletAddress ?? "not connected"}
+				</div>
+				{allTabs.map(t => (<TabButton key={t} tab={t} selected={tab === t} selectTab={setTab}/>))}
+				<div style={{ paddingTop: 10 }}>
+					<SelectedTab tab={tab} sdk={sdk}/>
+				</div>
 			</div>
-			{allTabs.map(t => (<TabButton key={t} tab={t} selected={tab === t} selectTab={setTab}/>))}
-			<div style={{ paddingTop: 10 }}>
-				<SelectedTab tab={tab} sdk={sdk}/>
-			</div>
-		</div>
-	)
+		}}
+	</SdkWalletConnector>
 }
 
 function TabButton(

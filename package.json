@@ -5,6 +5,7 @@
   "dependencies": {
     "@rarible/sdk": "0.7.32",
     "@rarible/web3-ethereum": "^0.12.16",
+    "@rarible/sdk-wallet-connector": "^0.8.5",
     "@testing-library/dom": "7.21.4",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
