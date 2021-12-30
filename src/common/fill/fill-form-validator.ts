@@ -7,6 +7,9 @@ export function validate(amount: string, prepareResponse: PrepareFillResponse): 
         return "amount can not be parsed"
     }
     //todo should this be number?
+    if (prepareResponse.maxAmount == undefined) {
+        return undefined
+    }
     if (a > parseInt(prepareResponse.maxAmount)) {
         return `max amount: ${prepareResponse.maxAmount}`
     }

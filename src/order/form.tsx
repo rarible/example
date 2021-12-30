@@ -55,7 +55,9 @@ function validate(price: string, amount: string, prepareResponse: PrepareOrderRe
 	if (isNaN(a)) {
 		return "amount can not be parsed"
 	}
-	//todo should this be number?
+	if (prepareResponse.maxAmount == undefined) {
+		return undefined
+	}
 	if (a > parseInt(prepareResponse.maxAmount)) {
 		return `max amount: ${prepareResponse.maxAmount}`
 	}
