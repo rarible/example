@@ -18,7 +18,7 @@ function App() {
 	const [tab, setTab] = useState<Tab>("collection")
 
 	return <SdkWalletConnector connector={connector}>
-		{(sdk, walletAddress, connection) => {
+		{(sdk, walletAddress) => {
 			return <div className="App">
 				<div style={{paddingBottom: 10}}>
 					Connected: {walletAddress ?? "not connected"}

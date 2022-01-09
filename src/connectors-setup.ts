@@ -2,25 +2,24 @@ import { NetworkType as TezosNetwork } from "@airgap/beacon-sdk"
 import Web3 from "web3"
 import { BlockchainWallet, FlowWallet, TezosWallet, EthereumWallet } from "@rarible/sdk-wallet"
 import { Web3Ethereum } from "@rarible/web3-ethereum"
-import { Blockchain } from "@rarible/api-client"
+import type { TezosToolkit } from "@taquito/taquito"
+import type { BeaconWallet } from "@taquito/beacon-wallet"
 import {
 	Connector,
 	IConnectorStateProvider,
 	ConnectionProvider,
-	MEWConnectionProvider,
 	InjectedWeb3ConnectionProvider,
-	BeaconConnectionProvider,
-	FclConnectionProvider,
 	AbstractConnectionProvider,
 	EthereumProviderConnectionResult,
-	FlowProviderConnectionResult,
-	TezosProviderConnectionResult,
-	TorusConnectionProvider,
-	WalletLinkConnectionProvider,
-	//WalletConnectConnectionProvider,
-	//FortmaticConnectionProvider,
-	//PortisConnectionProvider,
-} from "@rarible/sdk-wallet-connector";
+} from "@rarible/connector"
+import { FclConnectionProvider, FlowProviderConnectionResult } from "@rarible/connector-fcl"
+import { MEWConnectionProvider } from "@rarible/connector-mew"
+import { BeaconConnectionProvider } from "@rarible/connector-beacon"
+import { TorusConnectionProvider } from "@rarible/connector-torus"
+import { WalletLinkConnectionProvider } from "@rarible/connector-walletlink"
+import { WalletConnectConnectionProvider } from "@rarible/connector-walletconnect"
+// import { FortmaticConnectionProvider } from "@rarible/connector-fortmatic"
+// import { PortisConnectionProvider } from "@rarible/connector-portis"
 
 
 const ethereumRpcMap: Record<number, string> = {
@@ -30,40 +29,52 @@ const ethereumRpcMap: Record<number, string> = {
 	17: "https://node-e2e.rarible.com",
 }
 
-type ProviderResult = EthereumProviderConnectionResult | FlowProviderConnectionResult | TezosProviderConnectionResult
-
-function mapToBlockchainWallet<O, C extends ProviderResult>(provider: AbstractConnectionProvider<O, C>): ConnectionProvider<O, BlockchainWallet> {
-	return provider.map((wallet) => {
-		switch (wallet.blockchain) {
-			case Blockchain.ETHEREUM: {
-				return new EthereumWallet(new Web3Ethereum({ web3: new Web3(wallet.provider), from: wallet.address }))
-			}
-			case Blockchain.TEZOS: {
-				return new TezosWallet(wallet.provider)
-			}
-			case Blockchain.FLOW: {
-				return new FlowWallet(wallet.fcl)
-			}
-			default:
-				throw new Error("Unknown blockchain")
-		}
-	})
+export type WalletAndAddress = {
+	wallet: BlockchainWallet
+	address: string
 }
 
-const injected = mapToBlockchainWallet(new InjectedWeb3ConnectionProvider())
+function mapEthereumWallet<O>(provider: AbstractConnectionProvider<O, EthereumProviderConnectionResult>): ConnectionProvider<O, WalletAndAddress> {
+	return provider.map(state => ({
+		wallet: new EthereumWallet(new Web3Ethereum({ web3: new Web3(state.provider), from: state.address })),
+		address: state.address
+	}))
+}
 
-const mew = mapToBlockchainWallet(new MEWConnectionProvider({
+function mapFlowWallet<O>(provider: AbstractConnectionProvider<O, FlowProviderConnectionResult>): ConnectionProvider<O, WalletAndAddress> {
+	return provider.map(state => ({
+		wallet: new FlowWallet(state.fcl),
+		address: state.address,
+	}))
+}
+
+const injected = mapEthereumWallet(new InjectedWeb3ConnectionProvider())
+
+const mew = mapEthereumWallet(new MEWConnectionProvider({
 	networkId: 4,
 	rpcUrl: ethereumRpcMap[4]
 }))
 
-const beacon = mapToBlockchainWallet(new BeaconConnectionProvider({
+const beacon: ConnectionProvider<"beacon", WalletAndAddress> = new BeaconConnectionProvider({
 	appName: "Rarible Test",
 	accessNode: "https://tezos-hangzhou-node.rarible.org",
 	network: TezosNetwork.HANGZHOUNET
-}))
+}).map(async state => {
+	const provider = await createBeaconProvider(state.wallet, state.toolkit)
+	return {
+		wallet: new TezosWallet(provider),
+		address: state.address,
+	}
+})
 
-const fcl = mapToBlockchainWallet(new FclConnectionProvider({
+async function createBeaconProvider(beaconWallet: BeaconWallet, tezosToolkit: TezosToolkit) {
+	const { beacon_provider: createBeaconProvider } =
+		await import("tezos-sdk-module/dist/providers/beacon/beacon_provider")
+
+	return createBeaconProvider(beaconWallet as any, tezosToolkit as any)
+}
+
+const fcl = mapFlowWallet(new FclConnectionProvider({
 	accessNode: "https://access-testnet.onflow.org",
 	walletDiscovery: "https://flow-wallet-testnet.blocto.app/authn",
 	network: "testnet",
@@ -71,13 +82,13 @@ const fcl = mapToBlockchainWallet(new FclConnectionProvider({
 	applicationIcon: "https://rarible.com/favicon.png?2d8af2455958e7f0c812"
 }))
 
-const torus = mapToBlockchainWallet(new TorusConnectionProvider({
+const torus = mapEthereumWallet(new TorusConnectionProvider({
 	network: {
 		host: "rinkeby"
 	}
 }))
 
-const walletlink = mapToBlockchainWallet(new WalletLinkConnectionProvider({
+const walletLink = mapEthereumWallet(new WalletLinkConnectionProvider({
 	estimationUrl: ethereumRpcMap[4],
 	networkId: 4,
 	url: ethereumRpcMap[4]
@@ -86,17 +97,16 @@ const walletlink = mapToBlockchainWallet(new WalletLinkConnectionProvider({
 	appLogoUrl: "https://rarible.com/static/logo-500.static.png",
 	darkMode: false,
 }))
+const walletConnect = mapEthereumWallet(new WalletConnectConnectionProvider({
+	rpc: {
+		4: "https://node-rinkeby.rarible.com"
+	},
+	chainId: 4,
+}))
 
 // Providers required secrets
-// const walletConnect = mapToBlockchainWallet(new WalletConnectConnectionProvider({
-// 	infuraId: "INFURA_ID",
-// 	rpcMap: ethereumRpcMap,
-// 	networkId: 4
-// }))
-// const fortmatic = mapToBlockchainWallet(new FortmaticConnectionProvider({ apiKey: "FORTMATIC_API_KEY" }))
-// const portis = mapToBlockchainWallet(new PortisConnectionProvider({ apiKey: "PORTIS_API_KEY", network: "rinkeby" }))
-
-
+// const fortmatic = mapEthereumWallet(new FortmaticConnectionProvider({ apiKey: "ENTER", ethNetwork: { chainId: 4, rpcUrl: "https://node-rinkeby.rarible.com" } }))
+// const portis = mapEthereumWallet(new PortisConnectionProvider({ appId: "ENTER", network: "rinkeby" }))
 
 const state: IConnectorStateProvider = {
 	async getValue(): Promise<string | undefined> {
@@ -111,10 +121,10 @@ const state: IConnectorStateProvider = {
 export const connector = Connector
 	.create(injected, state)
 	.add(torus)
-	.add(walletlink)
+	.add(walletLink)
 	.add(mew)
 	.add(beacon)
 	.add(fcl)
-	//	.add(walletConnect)
-	//	.add(fortmatic)
-	//	.add(portis)
+	.add(walletConnect)
+	// .add(portis)
+	// .add(fortmatic)
