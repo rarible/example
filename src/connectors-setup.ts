@@ -69,7 +69,7 @@ const beacon: ConnectionProvider<"beacon", WalletAndAddress> = new BeaconConnect
 
 async function createBeaconProvider(beaconWallet: BeaconWallet, tezosToolkit: TezosToolkit) {
 	const { beacon_provider: createBeaconProvider } =
-		await import("tezos-sdk-module/dist/providers/beacon/beacon_provider")
+		await import("@rarible/tezos-sdk/dist/providers/beacon/beacon_provider")
 
 	return createBeaconProvider(beaconWallet as any, tezosToolkit as any)
 }
