@@ -2,8 +2,6 @@ import { NetworkType as TezosNetwork } from "@airgap/beacon-sdk"
 import Web3 from "web3"
 import { BlockchainWallet, FlowWallet, TezosWallet, EthereumWallet } from "@rarible/sdk-wallet"
 import { Web3Ethereum } from "@rarible/web3-ethereum"
-import type { TezosToolkit } from "@taquito/taquito"
-import type { BeaconWallet } from "@taquito/beacon-wallet"
 import {
 	Connector,
 	IConnectorStateProvider,
