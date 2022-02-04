@@ -18,11 +18,16 @@ export function Collection({ sdk }: { sdk: IRaribleSdk }) {
 				return <>
 					<p>Collection address: {response.address}</p>
 					<p>Transaction info:</p>
-					<code style={{fontFamily: "monospace"}}>
-						hash: {response.tx.transaction.hash}<br/>
-						from: {response.tx.transaction.from}<br/>
-						to: {response.tx.transaction.to}<br/>
-						nonce: {response.tx.transaction.nonce}<br/>
+					<code style={{
+						display: "block",
+						fontFamily: "monospace",
+						whiteSpace: "break-spaces",
+						wordBreak: "break-word",
+						textAlign: "left",
+						margin: "0 auto",
+						maxWidth: "80%"
+					}}>
+						{JSON.stringify(response.tx.transaction, null, " ")}
 					</code>
 				</>
 			}}
