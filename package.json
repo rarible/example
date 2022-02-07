@@ -13,7 +13,7 @@
     "@rarible/connector-torus": "~0.8.20",
     "@rarible/connector-walletconnect": "~0.8.20",
     "@rarible/connector-walletlink": "~0.8.20",
-    "@rarible/sdk": "~0.8.29",
+    "@rarible/sdk": "~0.8.30",
     "@rarible/web3-ethereum": "~0.12.26",
     "@rixio/atom": "^0.3.9",
     "@rixio/react": "^0.9.6",

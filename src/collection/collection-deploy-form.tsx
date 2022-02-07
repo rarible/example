@@ -15,9 +15,10 @@ export function CollectionDeployForm({ onSubmit }: CollectionDeployFormProps) {
 
 	const getRequest: () => DeployTokenRequest = () => {
 		switch (blockchain) {
+			case Blockchain.POLYGON:
 			case Blockchain.ETHEREUM:
 				return {
-					blockchain: Blockchain.ETHEREUM as DeploySupportedBlockchains,
+					blockchain: blockchain as DeploySupportedBlockchains,
 					asset: {
 						assetType: "ERC721",
 						arguments: {
@@ -53,6 +54,7 @@ export function CollectionDeployForm({ onSubmit }: CollectionDeployFormProps) {
 				<label htmlFor="blockchain">Blockchain</label>
 				<select id="blockchain" value={blockchain} onChange={(e) => setBlockchain(e.target.value as Blockchain)} >
 					<option value={Blockchain.ETHEREUM}>{Blockchain.ETHEREUM}</option>
+					<option value={Blockchain.POLYGON}>{Blockchain.POLYGON}</option>
 					<option value={Blockchain.TEZOS}>{Blockchain.TEZOS}</option>
 				</select>
 			</div>
@@ -63,7 +65,7 @@ export function CollectionDeployForm({ onSubmit }: CollectionDeployFormProps) {
 				<Input value={symbol} onChange={setSymbol} placeholder="Symbol"/>
 			</div>
 			{
-				blockchain === Blockchain.ETHEREUM ?
+				blockchain === Blockchain.ETHEREUM || blockchain === Blockchain.POLYGON ?
 					<div>
 						<Input value={baseURI} onChange={setBaseURI} placeholder="Base URI"/>
 					</div>
