@@ -1,6 +1,6 @@
 import React from "react"
 import { List } from "@mui/material"
-import { ListItemLink } from "../ListItemLink"
+import { ListItemLink } from "../common/list-item-link"
 
 
 export function Navigation() {

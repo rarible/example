@@ -6,7 +6,7 @@ import {
 } from "react-router-dom"
 
 interface IListItemLinkProps {
-	to: string,
+	to: string
 	primary: React.ReactNode
 	icon?: React.ReactNode
 }

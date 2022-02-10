@@ -1,5 +1,5 @@
 import React from "react"
-import { Page } from "../../components/Page"
+import { Page } from "../../components/page"
 import { Box, Typography } from "@mui/material"
 
 export function NotFoundPage() {
