@@ -2081,6 +2081,13 @@
   dependencies:
     callable-instance "^2.0.0"
 
+"@rarible/api-client@^0.0.11":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@rarible/api-client/-/api-client-0.0.11.tgz#434345e5eb51c48a8b3f88beebb6234618e88346"
+  integrity sha512-GZ59w8JlfOoA2W30Vxka+inf3GeMGANyR9HX/9FkC1a/B4n8EtCvDmItUqzbzdmbwIdWghsp4NV/k574pYI04w==
+  dependencies:
+    "@rarible/types" "~0.5.3"
+
 "@rarible/api-client@~0.0.10":
   version "0.0.10"
   resolved "https://registry.yarnpkg.com/@rarible/api-client/-/api-client-0.0.10.tgz#72641df1f49a0a4927ecf9431c139c925b5e3c7c"
@@ -3030,6 +3037,11 @@
   version "0.7.7"
   resolved "https://registry.yarnpkg.com/@types/libsodium-wrappers/-/libsodium-wrappers-0.7.7.tgz#cdb25e85458612ec80f0157c3815fac187d0b6d2"
   integrity sha512-Li91pVKcLvQJK3ZolwCPo85oxf2gKBCApgnesRxYg4OVYchLXcJB2eivX8S87vfQVv6ZRnyCO1lLDosZGJfpRg==
+
+"@types/lodash@^4.14.178":
+  version "4.14.178"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.178.tgz#341f6d2247db528d4a13ddbb374bcdc80406f4f8"
+  integrity sha512-0d5Wd09ItQWH1qFbEyQ7oTQ3GZrMfth5JkbN3EvTKLXcHLRDSXeLnlvlOn0wvxVIwK5o2M8JzP/OWz7T3NRsbw==
 
 "@types/minimatch@*":
   version "3.0.5"
@@ -13111,6 +13123,11 @@ react-error-overlay@6.0.9, react-error-overlay@^6.0.9:
   version "6.0.9"
   resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-6.0.9.tgz#3c743010c9359608c375ecd6bc76f35d93995b0a"
   integrity sha512-nQTTcUu+ATDbrSD1BZHr5kgSD4oF8OFjxun8uAaL8RwPBacGBNPf/yAuVVdx17N8XNzRDMrZ9XcKZHCjPW+9ew==
+
+react-hook-form@^7.27.0:
+  version "7.27.0"
+  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.27.0.tgz#2c05e54ca557f71c55f645311ff612ec936c6c7c"
+  integrity sha512-NEh3Qbz1Rg3w95SRZv0kHorHN3frtMKasplznMBr8RkFrE4pVxjd/zo3clnFXpD0FppUVHBMfsTMtTsa6wyQrA==
 
 react-is@^16.13.1, react-is@^16.7.0:
   version "16.13.1"

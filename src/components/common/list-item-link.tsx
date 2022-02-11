@@ -9,6 +9,7 @@ interface IListItemLinkProps {
 	to: string
 	primary: React.ReactNode
 	icon?: React.ReactNode
+	default?: boolean
 }
 
 export function ListItemLink(props: IListItemLinkProps) {
@@ -25,7 +26,13 @@ export function ListItemLink(props: IListItemLinkProps) {
 
 	return (
 		<li>
-			<ListItem button component={renderLink} selected={location.pathname === to}>
+			<ListItem
+				button
+				component={renderLink}
+				selected={
+					location.pathname === to ||
+					(props.default && (location.pathname === "" || location.pathname === "/"))
+				}>
 				{icon ? <ListItemIcon>{icon}</ListItemIcon> : null}
 				<ListItemText primary={primary} />
 			</ListItem>

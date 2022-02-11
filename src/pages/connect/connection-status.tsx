@@ -1,67 +1,55 @@
-import React, { useContext, useMemo } from "react"
+import React, { useContext } from "react"
+import { isString } from "lodash"
+import { Alert, AlertTitle, Box } from "@mui/material"
+import { faLink, faLinkSlash } from "@fortawesome/free-solid-svg-icons"
 import { ConnectorContext } from "../../components/connector/sdk-connection-provider"
-import { from } from "rxjs"
-import { Rx } from "@rixio/react"
-import { LoadingButton } from "@mui/lab"
-import { Box, Stack, Typography } from "@mui/material"
-import { faChevronRight } from "@fortawesome/free-solid-svg-icons"
 import { Icon } from "../../components/common/icon"
+import { Address } from "../../components/common/address"
 
-function getWalletInfo(option: string): {label: string} {
-	switch (option) {
-		case "walletlink":
-			return {label: "Coinbase"}
-		case "fcl":
-			return {label: "Blocto"}
-		default:
-			return {label: option}
-	}
-}
-
-export function ConnectOptions() {
-	const connection = useContext(ConnectorContext)
-	const { connector, state } = connection
-
-	const options$ = useMemo(() => connector ? from(connector.getOptions()) : from([]), [connector])
-
-	if (!connector) {
+function connectionErrorMessage(error: any): string | null {
+	if (!error) {
 		return null
 	}
 
-	return <Box sx={{
-		maxWidth: 300
-	}}>
-		<Rx value$={options$}>
-			{options => (
-				<Stack spacing={1}>
-					{
-						options.map(o => {
-							const walletInfo = getWalletInfo(o.option)
-							return <div key={o.option}>
-								<LoadingButton
-									onClick={() => connector.connect(o)}
-									loading={state.status === "connecting" && state.providerId === o.provider.getId()}
-									loadingPosition="start"
-									startIcon={<Icon icon={faChevronRight}/>}
-									sx={{
-										justifyContent: "start",
-										pl: "3rem",
-										"& .MuiButton-startIcon": {
-											position: "absolute",
-											left: "1.25rem"
-										}
-									}}
-									variant="outlined"
-									disabled={state?.status === "connected"}
-									fullWidth
-								>
-									{walletInfo.label}
-								</LoadingButton>
-							</div>
-						})
-					}
-				</Stack>
-			)}
-		</Rx>
-	</Box>
+	if (error.message) {
+		return error.message
+	} else if (isString(error)) {
+		return error.replace(/^error:\s/gi, "")
+	}
+
+	return null
+}
+
+export function ConnectionStatus() {
+	const connection = useContext(ConnectorContext)
+
+	switch (connection?.state.status) {
+		case "connected":
+			return <Alert severity="success" icon={<Icon icon={faLink}/>}>
+				<AlertTitle>Current Status: connected</AlertTitle>
+				Application is connected to wallet <Address
+				address={connection.state.connection.address}
+				trim={false}
+			/>
+			</Alert>
+		case "disconnected":
+			const error = connectionErrorMessage(connection?.state.error)
+			return <Alert severity="error" icon={<Icon icon={faLinkSlash}/>}>
+				<AlertTitle>Disconnected</AlertTitle>
+				Application currently not connected to any wallet
+				{ error && <Box sx={{ mt: 1 }}>Last attempt error: {error}</Box> }
+			</Alert>
+		case "connecting":
+			return <Alert severity="info">
+				<AlertTitle>Connecting...</AlertTitle>
+				Connection to wallet in process
+			</Alert>
+		case "initializing":
+			return <Alert severity="info">
+				<AlertTitle>Initializing...</AlertTitle>
+				Connector initialization
+			</Alert>
+		default:
+			return null
+	}
 }

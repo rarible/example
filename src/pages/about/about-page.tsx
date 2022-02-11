@@ -4,7 +4,7 @@ import { InlineCode } from "../../components/common/inline-code"
 
 export function AboutPage() {
   return (
-      <Page header={"About this example"}>
+      <Page header="About this example">
           This example uses:
           <ul>
               <li><InlineCode>@rarible/sdk</InlineCode></li>

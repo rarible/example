@@ -22,7 +22,7 @@ export function ConnectedStatus({ state }: IConnectedStatusProps) {
 			<IconButton
 				color="inherit"
 				title="Disconnect"
-				onClick={() => state.disconnect && state.disconnect()}
+				onClick={state.disconnect}
 			>
 				<Icon icon={faLinkSlash}/>
 			</IconButton>

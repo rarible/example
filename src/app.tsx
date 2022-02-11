@@ -8,6 +8,7 @@ import { Header } from "./components/parts/Header/header"
 import { Navigation } from "./components/parts/navigation"
 import { SdkConnectionProvider } from "./components/connector/sdk-connection-provider"
 import { connector } from "./connectors-setup"
+import { DeployPage } from "./pages/deploy/deploy-page"
 
 export function App() {
 	return (
@@ -28,6 +29,7 @@ export function App() {
 							<Route path="/" element={<AboutPage/>}/>
 							<Route path="about" element={<AboutPage/>}/>
 							<Route path="connect" element={<ConnectPage/>}/>
+							<Route path="deploy" element={<DeployPage/>}/>
 							<Route path="*" element={<NotFoundPage/>}/>
 						</Routes>
 					</Box>

@@ -1,46 +1,10 @@
-import React, { useContext } from "react"
-import { Alert, AlertTitle, Link, Typography } from "@mui/material"
-import { faLink, faLinkSlash } from "@fortawesome/free-solid-svg-icons"
+import React from "react"
+import { Typography } from "@mui/material"
 import { Page } from "../../components/page"
 import { ConnectOptions } from "./connect-options"
-import { ConnectorContext } from "../../components/connector/sdk-connection-provider"
-import { Address } from "../../components/common/address"
-import { Icon } from "../../components/common/icon"
 import { CommentedBlock } from "../../components/common/commented-block"
-import { Code } from "../../components/common/code"
 import { ConnectorUsageComment } from "./comments/connector-usage-comment"
-
-function ConnectionStatus() {
-	const connection = useContext(ConnectorContext)
-
-	switch (connection?.state.status) {
-		case "connected":
-			return <Alert severity="success" icon={<Icon icon={faLink}/>}>
-				<AlertTitle>Current Status: connected</AlertTitle>
-				Application is connected to wallet <Address
-				address={connection.state.connection.address}
-				trim={false}
-			/>
-			</Alert>
-		case "disconnected":
-			return <Alert severity="error" icon={<Icon icon={faLinkSlash}/>}>
-				<AlertTitle>Disconnected</AlertTitle>
-				Application currently not connected to any wallet
-			</Alert>
-		case "connecting":
-			return <Alert severity="info">
-				<AlertTitle>Connecting...</AlertTitle>
-				Connection to wallet in process
-			</Alert>
-		case "initializing":
-			return <Alert severity="info">
-				<AlertTitle>Initializing...</AlertTitle>
-				Connector initialization
-			</Alert>
-		default:
-			return null
-	}
-}
+import { ConnectionStatus } from "./connection-status"
 
 export function ConnectPage() {
 	return (
