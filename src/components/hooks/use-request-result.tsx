@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { isString } from "lodash"
+import { FormState } from "../common/form/types"
 
 export interface IRequestResult<T> {
 	result: {
@@ -32,5 +33,17 @@ export function useRequestResult<T>(): IRequestResult<T> {
 				error: isString(error) ? error : (error.message ? error.message : JSON.stringify(error))
 			})
 		},
+	}
+}
+
+export function resultToState(resultType: IRequestResult<any>["result"]["type"]): FormState {
+	switch (resultType) {
+		case "complete":
+			return "success"
+		case "error":
+			return "error"
+		case "empty":
+		default:
+			return "normal"
 	}
 }

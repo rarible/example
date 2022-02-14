@@ -11,17 +11,17 @@ interface IFormTextInputProps extends StandardTextFieldProps {
 	name: string
 }
 
-export function FormTextInput({ form, options, name, label, helperText, ...rest }: IFormTextInputProps) {
+export function FormTextInput({ form, options, name, label, helperText, disabled, ...rest }: IFormTextInputProps) {
 	const { register } = form
 	const { hasError, message: errorMessage } = useFormInputError(form, name)
 
 	return <TextField
-		{...register(name, { required: true, ...options })}
 		label={label}
 		size="small"
 		error={hasError}
 		helperText={errorMessage ?? helperText}
 		fullWidth
 		{...rest}
+		{...register(name, { required: true, disabled, ...options })}
 	/>
 }

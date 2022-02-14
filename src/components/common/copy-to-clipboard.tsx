@@ -1,25 +1,29 @@
 import React, { useCallback, useState } from "react"
-import copy from 'copy-to-clipboard'
 import { IconButton, Tooltip } from "@mui/material"
 import { Icon } from "./icon"
-import { faCheck, faCopy } from "@fortawesome/free-solid-svg-icons"
+import { faCheck, faCopy, faTimes } from "@fortawesome/free-solid-svg-icons"
 
 interface ICopyToClipboardProps {
 	value: string
 }
 
 export function CopyToClipboard({ value }: ICopyToClipboardProps) {
-	const [copied, setCopied] = useState(false)
-	const copyHandler = useCallback(() => {
-		copy(value, {onCopy: () => setCopied(true)})
+	const [copied, setCopied] = useState<boolean | null>(null)
+	const copyHandler = useCallback(async () => {
+		try {
+			await navigator.clipboard.writeText(value)
+			setCopied(true)
+		} catch {
+			setCopied(false)
+		}
 	}, [value])
 
 	return <Tooltip title="Copy To Clipboard" placement="top">
 		<IconButton
-			color={copied ? "success" : "default"}
+			color={copied === true ? "success" : (copied === false ? "warning" : "default")}
 			onClick={copyHandler}
 		>
-			<Icon icon={copied ? faCheck : faCopy}/>
+			<Icon icon={copied === true ? faCheck : (copied === false ? faTimes : faCopy)}/>
 		</IconButton>
 	</Tooltip>
 }

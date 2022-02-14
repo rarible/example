@@ -6,7 +6,7 @@ import { faCheck, faExclamationCircle } from "@fortawesome/free-solid-svg-icons"
 
 interface IRequestResultProps<T> {
 	result: IRequestResult<any>["result"]
-	completeRender: (data: T) => React.ReactNode
+	completeRender?: (data: T) => React.ReactNode
 }
 
 export function RequestResult({ result, completeRender }: IRequestResultProps<any>) {
@@ -22,7 +22,7 @@ export function RequestResult({ result, completeRender }: IRequestResultProps<an
 			return <Box>
 				<Alert variant="outlined" severity="success" icon={<Icon icon={faCheck}/>}>
 					<AlertTitle>Request completed</AlertTitle>
-					{completeRender(result.data)}
+					{completeRender?.(result.data)}
 				</Alert>
 			</Box>
 	}

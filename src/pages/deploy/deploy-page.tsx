@@ -9,7 +9,7 @@ import { FormTextInput } from "../../components/common/form/form-text-input"
 import { FormSubmit } from "../../components/common/form/form-submit"
 import { FormSelect } from "../../components/common/form/form-select"
 import { ConnectorContext } from "../../components/connector/sdk-connection-provider"
-import { useRequestResult } from "../../components/hooks/use-request-result"
+import { resultToState, useRequestResult } from "../../components/hooks/use-request-result"
 import { FormCheckbox } from "../../components/common/form/form-checkbox"
 import { CollectionDeployComment } from "./comments/collection-deploy-comment"
 import { RequestResult } from "../../components/common/request-result"
@@ -17,6 +17,7 @@ import { Code } from "../../components/common/code"
 import { InlineCode } from "../../components/common/inline-code"
 import { CollectionResultComment } from "./comments/collection-result-comment"
 import { CopyToClipboard } from "../../components/common/copy-to-clipboard"
+import { TransactionInfo } from "../../components/common/transaction-info"
 
 function getDeployRequest(data: Record<string, any>) {
 	switch (data["blockchain"]) {
@@ -57,14 +58,13 @@ function getDeployRequest(data: Record<string, any>) {
 export function DeployPage() {
 	const connection = useContext(ConnectorContext)
 	const form = useForm()
-	const { result, setComplete, setError } = useRequestResult()
 	const { handleSubmit } = form
+	const { result, setComplete, setError } = useRequestResult()
 
 	return (
 		<Page header="Deploy Collection">
 			<CommentedBlock sx={{ my: 2 }} comment={<CollectionDeployComment/>}>
 				<form onSubmit={handleSubmit(async (formData) => {
-					console.log(formData)
 					try {
 						setComplete(await connection.sdk?.nft.deploy(getDeployRequest(formData)))
 					} catch (e) {
@@ -84,35 +84,29 @@ export function DeployPage() {
 						<FormTextInput form={form} name="contractURI" label="Contract URI"/>
 						<FormCheckbox form={form} name="private" label="Private Collection"/>
 						<Box>
-							<FormSubmit
-								form={form}
-								label="Deploy"
-								state={
-									result.type === "complete" ? "success" : (
-										result.type === "error" ? "error" : "normal"
-									)
-								}
-							/>
+							<FormSubmit form={form} label="Deploy" state={resultToState(result.type)}/>
 						</Box>
 					</Stack>
 				</form>
 			</CommentedBlock>
 
 			<CommentedBlock sx={{ my: 2 }} comment={result.type === "complete" ? <CollectionResultComment/> : null}>
-				<RequestResult result={result} completeRender={(data) => {
-					return <>
-						<Box sx={{ my: 2 }}>
-							<Typography variant={"overline"}>Collection Address:</Typography>
-							<div><InlineCode>{data.address}</InlineCode> <CopyToClipboard value={data.address}/></div>
-						</Box>
-						<Box sx={{ my: 2 }}>
-							<Typography variant={"overline"}>Transaction Info:</Typography>
-							<Code theme={"light"} language="json">
-								{JSON.stringify(data.tx, null, " ")}
-							</Code>
-						</Box>
-					</>
-				}}/>
+				<RequestResult
+					result={result}
+					completeRender={(data) =>
+						<>
+							<Box sx={{ my: 2 }}>
+								<Typography variant="overline">Collection Address:</Typography>
+								<div>
+									<InlineCode>{data.address}</InlineCode> <CopyToClipboard value={data.address}/>
+								</div>
+							</Box>
+							<Box sx={{ my: 2 }}>
+								<TransactionInfo transaction={data.tx}/>
+							</Box>
+						</>
+					}
+				/>
 			</CommentedBlock>
 		</Page>
 	)

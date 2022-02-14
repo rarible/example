@@ -9,6 +9,9 @@ import { Navigation } from "./components/parts/navigation"
 import { SdkConnectionProvider } from "./components/connector/sdk-connection-provider"
 import { connector } from "./connectors-setup"
 import { DeployPage } from "./pages/deploy/deploy-page"
+import { SellPage } from "./pages/sell/sell-page"
+import { BuyPage } from "./pages/buy/buy-page"
+import { MintPage } from "./pages/mint/mint-page"
 
 export function App() {
 	return (
@@ -30,6 +33,9 @@ export function App() {
 							<Route path="about" element={<AboutPage/>}/>
 							<Route path="connect" element={<ConnectPage/>}/>
 							<Route path="deploy" element={<DeployPage/>}/>
+							<Route path="mint" element={<MintPage/>}/>
+							<Route path="sell" element={<SellPage/>}/>
+							<Route path="buy" element={<BuyPage/>}/>
 							<Route path="*" element={<NotFoundPage/>}/>
 						</Routes>
 					</Box>

@@ -11,17 +11,17 @@ interface IFormSelectProps extends StandardTextFieldProps  {
 	name: string
 }
 
-export function FormSelect({ form, options, name, children, helperText, ...rest }: React.PropsWithChildren<IFormSelectProps>) {
+export function FormSelect({ form, options, name, children, helperText, disabled,  ...rest }: React.PropsWithChildren<IFormSelectProps>) {
 	const { register } = form
 	const { hasError, message: errorMessage } = useFormInputError(form, name)
 
 	return <TextField
-		{...register(name, { required: true, ...options })}
 		size="small"
 		error={hasError}
 		helperText={errorMessage ?? helperText}
 		select
 		fullWidth
+		{...register(name, { required: true, disabled, ...options })}
 		{...rest}
 	>
 		{ children }

@@ -2,39 +2,42 @@ import React from "react"
 import { useForm } from "react-hook-form"
 import { faCheckDouble, faExclamationTriangle, faCheck } from "@fortawesome/free-solid-svg-icons"
 import { LoadingButton } from "@mui/lab"
+import { IconDefinition } from "@fortawesome/fontawesome-common-types"
 import { size } from "lodash"
 import { Icon } from "../icon"
+import { FormState } from "./types"
 
 interface IFormSubmitProps {
 	form: ReturnType<typeof useForm>
 	label: string
-	state: "error" | "success" | "normal"
+	state: FormState
+	icon?: IconDefinition
 }
 
-export function FormSubmit({ form, label, state }: IFormSubmitProps) {
+export function FormSubmit({ form, icon, label, state }: IFormSubmitProps) {
 	const { formState: { errors, isSubmitting, isValidating } } = form
 
 	const isValid = size(errors) === 0
 
 	let color = undefined
-	let icon = undefined
+	let iconEl = undefined
 	if (!isValid) {
 		color = "warning"
-		icon = <Icon icon={faExclamationTriangle}/>
+		iconEl = <Icon icon={faExclamationTriangle}/>
 	} else {
 		switch (state) {
 			case "error":
 				color = "error"
-				icon = <Icon icon={faExclamationTriangle}/>
+				iconEl = <Icon icon={faExclamationTriangle}/>
 				break
 			case "success":
 				color = "success"
-				icon = <Icon icon={faCheckDouble}/>
+				iconEl = <Icon icon={faCheckDouble}/>
 				break
 			case "normal":
 			default:
 				color = "primary"
-				icon = <Icon icon={faCheck}/>
+				iconEl = <Icon icon={icon ?? faCheck}/>
 				break
 		}
 	}
@@ -43,7 +46,7 @@ export function FormSubmit({ form, label, state }: IFormSubmitProps) {
 		type="submit"
 		loading={isSubmitting || isValidating}
 		loadingPosition="start"
-		startIcon={icon}
+		startIcon={iconEl}
 		color={color as any}
 		variant="contained"
 	>

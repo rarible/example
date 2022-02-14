@@ -40,10 +40,8 @@ await connector.connect(options[0])
 		`}
 		</Code>
 		<Typography gutterBottom>
-			Check out more <Link
-			href="https://github.com/rarible/sdk/tree/master/packages/connector"
-			target="_blank"
-		>documentation in package repository</Link>.
+			Check out more <Link href="https://github.com/rarible/sdk/tree/master/packages/connector"
+			target="_blank">documentation in package repository</Link>.
 		</Typography>
 	</>
 }

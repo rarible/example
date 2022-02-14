@@ -15,7 +15,17 @@ export function CommentedBlock(props: React.PropsWithChildren<ICommentedBlockPro
 		<Grid item xs={1}>
 			{
 				comment &&
-					<Box sx={{ borderLeft: "5px solid #eee", height: "100%", p: 1 }}>
+					<Box sx={(theme) => ({
+						p: 1,
+						[theme.breakpoints.up("lg")] : {
+							borderLeft: "5px solid #eee",
+							height: "100%",
+						},
+						[theme.breakpoints.down("lg")] : {
+							borderTop: "5px solid #eee",
+							borderBottom: "5px solid #eee"
+						},
+					})}>
 						{comment}
 					</Box>
 			}
