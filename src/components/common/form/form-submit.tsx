@@ -7,20 +7,21 @@ import { size } from "lodash"
 import { Icon } from "../icon"
 import { FormState } from "./types"
 
-interface IFormSubmitProps {
+interface IFormSubmitProps  {
 	form: ReturnType<typeof useForm>
 	label: string
 	state: FormState
 	icon?: IconDefinition
+	disabled?: boolean
 }
 
-export function FormSubmit({ form, icon, label, state }: IFormSubmitProps) {
+export function FormSubmit({ form, icon, label, state, disabled }: IFormSubmitProps) {
 	const { formState: { errors, isSubmitting, isValidating } } = form
 
 	const isValid = size(errors) === 0
 
-	let color = undefined
-	let iconEl = undefined
+	let color
+	let iconEl
 	if (!isValid) {
 		color = "warning"
 		iconEl = <Icon icon={faExclamationTriangle}/>
@@ -38,7 +39,6 @@ export function FormSubmit({ form, icon, label, state }: IFormSubmitProps) {
 			default:
 				color = "primary"
 				iconEl = <Icon icon={icon ?? faCheck}/>
-				break
 		}
 	}
 
@@ -49,6 +49,7 @@ export function FormSubmit({ form, icon, label, state }: IFormSubmitProps) {
 		startIcon={iconEl}
 		color={color as any}
 		variant="contained"
+		disabled={disabled}
 	>
 		{label}
 	</LoadingButton>

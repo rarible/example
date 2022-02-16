@@ -2,7 +2,7 @@ import React, { useContext } from "react"
 import { Box, Stack } from "@mui/material"
 import { useForm } from "react-hook-form"
 import { toItemId } from "@rarible/types"
-import { PrepareOrderResponse } from "@rarible/sdk/build/types/order/common"
+import { PrepareBidResponse } from "@rarible/sdk/build/types/order/bid/domain"
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons"
 import { FormTextInput } from "../../components/common/form/form-text-input"
 import { FormSubmit } from "../../components/common/form/form-submit"
@@ -10,12 +10,12 @@ import { resultToState, useRequestResult } from "../../components/hooks/use-requ
 import { ConnectorContext } from "../../components/connector/sdk-connection-provider"
 import { RequestResult } from "../../components/common/request-result"
 
-interface ISellPrepareFormProps {
-	onComplete: (response: PrepareOrderResponse) => void
+interface IBidPrepareFormProps {
 	disabled?: boolean
+	onComplete: (response: PrepareBidResponse) => void
 }
 
-export function SellPrepareForm({ disabled, onComplete }: ISellPrepareFormProps) {
+export function BidPrepareForm({ disabled, onComplete }: IBidPrepareFormProps) {
 	const connection = useContext(ConnectorContext)
 	const form = useForm()
 	const { handleSubmit } = form
@@ -23,12 +23,13 @@ export function SellPrepareForm({ disabled, onComplete }: ISellPrepareFormProps)
 
 	return (
 		<>
+
 			<form onSubmit={handleSubmit(async (formData) => {
 				if (!connection.sdk) {
 					return
 				}
 				try {
-					onComplete(await connection.sdk.order.sell({
+					onComplete(await connection.sdk.order.bid({
 						itemId: toItemId(formData.itemId)
 					}))
 				} catch (e) {

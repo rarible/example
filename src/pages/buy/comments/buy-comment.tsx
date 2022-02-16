@@ -5,7 +5,7 @@ export function BuyComment() {
 	return <>
 		<Code>
 			{`
-// get buy info
+// get order info
 const buy = await connection.sdk.order.buy({
   orderId: <ORDER ID>
 })

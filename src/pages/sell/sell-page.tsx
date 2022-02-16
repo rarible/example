@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useContext } from "react"
 import { Box, Typography } from "@mui/material"
 import { Page } from "../../components/page"
 import { CommentedBlock } from "../../components/common/commented-block"
@@ -9,23 +9,45 @@ import { CopyToClipboard } from "../../components/common/copy-to-clipboard"
 import { SellPrepareForm } from "./sell-prepare-form"
 import { SellForm } from "./sell-form"
 import { SellComment } from "./comments/sell-comment"
+import { UnsupportedBlockchainWarning } from "../../components/common/unsupported-blockchain-warning"
+import { Blockchain } from "@rarible/api-client"
+import { ConnectorContext } from "../../components/connector/sdk-connection-provider"
+
+function validateConditions(blockchain: Blockchain | undefined): boolean {
+	return !!blockchain
+}
 
 export function SellPage() {
+	const connection = useContext(ConnectorContext)
+	const blockchain = connection.sdk?.wallet?.blockchain
+
 	return (
 		<Page header="Sell Token">
+			{
+				!validateConditions(blockchain) && <CommentedBlock sx={{ my: 2 }}>
+                    <UnsupportedBlockchainWarning blockchain={blockchain}/>
+                </CommentedBlock>
+			}
 			<CommentedBlock sx={{ my: 2 }} comment={<SellComment/>}>
 				<FormStepper
 					steps={[
 						{
 							label: "Get Item Info",
 							render: (onComplete) => {
-								return <SellPrepareForm onComplete={onComplete}/>
+								return <SellPrepareForm
+									onComplete={onComplete}
+									disabled={!validateConditions(blockchain)}
+								/>
 							}
 						},
 						{
 							label: "Send Transaction",
 							render: (onComplete, lastResponse) => {
-								return <SellForm onComplete={onComplete} prepare={lastResponse}/>
+								return <SellForm
+									onComplete={onComplete}
+									prepare={lastResponse}
+									disabled={!validateConditions(blockchain)}
+								/>
 							}
 						},
 						{

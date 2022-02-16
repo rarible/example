@@ -23,11 +23,17 @@ export function Navigation() {
 	}, {
 		label: "Buy",
 		path: "/buy"
+	}, {
+		label: "Bid",
+		path: "/bid"
+	}, {
+		label: "Accept Bid",
+		path: "/accept-bid"
 	}]
 
 	return (
 		<List>
-			{links.map((link, index) => (
+			{links.map((link) => (
 				<ListItemLink key={link.path} to={link.path} primary={link.label} default={link.default}/>
 			))}
 		</List>

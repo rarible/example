@@ -11,10 +11,11 @@ import { ConnectorContext } from "../../components/connector/sdk-connection-prov
 import { RequestResult } from "../../components/common/request-result"
 
 interface IBuyPrepareFormProps {
+	disabled?: boolean
 	onComplete: (response: PrepareFillResponse) => void
 }
 
-export function BuyPrepareForm({ onComplete }: IBuyPrepareFormProps) {
+export function BuyPrepareForm({ disabled, onComplete }: IBuyPrepareFormProps) {
 	const connection = useContext(ConnectorContext)
 	const form = useForm()
 	const { handleSubmit } = form
@@ -38,7 +39,13 @@ export function BuyPrepareForm({ onComplete }: IBuyPrepareFormProps) {
 				<Stack spacing={2}>
 					<FormTextInput form={form} name="orderId" label="Order ID"/>
 					<Box>
-						<FormSubmit form={form} label="Next" state={resultToState(result.type)} icon={faChevronRight}/>
+						<FormSubmit
+							form={form}
+							label="Next"
+							state={resultToState(result.type)}
+							icon={faChevronRight}
+							disabled={disabled}
+						/>
 					</Box>
 				</Stack>
 			</form>

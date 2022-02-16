@@ -11,11 +11,12 @@ import { RequestResult } from "../../components/common/request-result"
 
 
 interface IMintFormProps {
-	onComplete: (response: MintResponse) => void
 	prepare: PrepareMintResponse
+	disabled?: boolean
+	onComplete: (response: MintResponse) => void
 }
 
-export function MintForm({ prepare, onComplete }: IMintFormProps) {
+export function MintForm({ prepare, disabled, onComplete }: IMintFormProps) {
 	const connection = useContext(ConnectorContext)
 	const form = useForm()
 	const { handleSubmit } = form
@@ -58,7 +59,12 @@ export function MintForm({ prepare, onComplete }: IMintFormProps) {
 						//helperText={!prepareResponse.multiple ? "Collection does not support multiple mint" : null}
 					/>
 					<Box>
-						<FormSubmit form={form} label="Submit" state={resultToState(result.type)}/>
+						<FormSubmit
+							form={form}
+							label="Submit"
+							state={resultToState(result.type)}
+							disabled={disabled}
+						/>
 					</Box>
 				</Stack>
 			</form>

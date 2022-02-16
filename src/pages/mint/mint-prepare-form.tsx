@@ -10,10 +10,11 @@ import { ConnectorContext } from "../../components/connector/sdk-connection-prov
 import { RequestResult } from "../../components/common/request-result"
 
 interface IMintPrepareFormProps {
+	disabled?: boolean,
 	onComplete: (response: PrepareMintResponse) => void
 }
 
-export function MintPrepareForm({ onComplete }: IMintPrepareFormProps) {
+export function MintPrepareForm({ disabled, onComplete }: IMintPrepareFormProps) {
 	const connection = useContext(ConnectorContext)
 	const form = useForm()
 	const { handleSubmit } = form
@@ -38,7 +39,13 @@ export function MintPrepareForm({ onComplete }: IMintPrepareFormProps) {
 				<Stack spacing={2}>
 					<FormTextInput form={form} name="collectionId" label="Collection ID"/>
 					<Box>
-						<FormSubmit form={form} label="Next" state={resultToState(result.type)} icon={faChevronRight}/>
+						<FormSubmit
+							form={form}
+							label="Next"
+							state={resultToState(result.type)}
+							icon={faChevronRight}
+							disabled={disabled}
+						/>
 					</Box>
 				</Stack>
 			</form>

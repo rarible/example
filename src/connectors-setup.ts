@@ -29,6 +29,7 @@ const ethereumRpcMap: Record<number, string> = {
 }
 
 function mapEthereumWallet<O>(provider: AbstractConnectionProvider<O, EthereumProviderConnectionResult>): ConnectionProvider<O, IWalletAndAddress> {
+	//todo: set correct blockchain polygon/ethereum
 	return provider.map(state => ({
 		wallet: new EthereumWallet(new Web3Ethereum({ web3: new Web3(state.provider), from: state.address })),
 		address: state.address

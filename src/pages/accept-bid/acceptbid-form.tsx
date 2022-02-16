@@ -1,21 +1,20 @@
 import React, { useContext } from "react"
-import { Box, Stack } from "@mui/material"
 import { useForm } from "react-hook-form"
-import { toItemId } from "@rarible/types"
-import { PrepareOrderResponse } from "@rarible/sdk/build/types/order/common"
-import { faChevronRight } from "@fortawesome/free-solid-svg-icons"
+import { Box, Stack } from "@mui/material"
+import { PrepareFillResponse } from "@rarible/sdk/build/types/order/fill/domain"
 import { FormTextInput } from "../../components/common/form/form-text-input"
 import { FormSubmit } from "../../components/common/form/form-submit"
 import { resultToState, useRequestResult } from "../../components/hooks/use-request-result"
 import { ConnectorContext } from "../../components/connector/sdk-connection-provider"
 import { RequestResult } from "../../components/common/request-result"
 
-interface ISellPrepareFormProps {
-	onComplete: (response: PrepareOrderResponse) => void
+interface IAcceptBidFormProps {
+	prepare: PrepareFillResponse
 	disabled?: boolean
+	onComplete: (response: any) => void
 }
 
-export function SellPrepareForm({ disabled, onComplete }: ISellPrepareFormProps) {
+export function AcceptBidForm({ prepare, disabled, onComplete }: IAcceptBidFormProps) {
 	const connection = useContext(ConnectorContext)
 	const form = useForm()
 	const { handleSubmit } = form
@@ -27,9 +26,10 @@ export function SellPrepareForm({ disabled, onComplete }: ISellPrepareFormProps)
 				if (!connection.sdk) {
 					return
 				}
+
 				try {
-					onComplete(await connection.sdk.order.sell({
-						itemId: toItemId(formData.itemId)
+					onComplete(await prepare.submit({
+						amount: parseInt(formData.amount)
 					}))
 				} catch (e) {
 					setError(e)
@@ -37,15 +37,19 @@ export function SellPrepareForm({ disabled, onComplete }: ISellPrepareFormProps)
 			})}
 			>
 				<Stack spacing={2}>
-					<FormTextInput form={form} name="itemId" label="Item ID"/>
+					<FormTextInput
+						type="number"
+						inputProps={{ min: 1, max: prepare.maxAmount, step: 1 }}
+						form={form}
+						options={{
+							min: 1,
+							max: Number(prepare.maxAmount)
+						}}
+						name="amount"
+						label="Amount"
+					/>
 					<Box>
-						<FormSubmit
-							form={form}
-							label="Next"
-							state={resultToState(result.type)}
-							icon={faChevronRight}
-							disabled={disabled}
-						/>
+						<FormSubmit form={form} label="Submit" state={resultToState(result.type)} disabled={disabled}/>
 					</Box>
 				</Stack>
 			</form>

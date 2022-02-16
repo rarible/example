@@ -13,11 +13,11 @@ import { resultToState, useRequestResult } from "../../components/hooks/use-requ
 import { FormCheckbox } from "../../components/common/form/form-checkbox"
 import { CollectionDeployComment } from "./comments/collection-deploy-comment"
 import { RequestResult } from "../../components/common/request-result"
-import { Code } from "../../components/common/code"
 import { InlineCode } from "../../components/common/inline-code"
 import { CollectionResultComment } from "./comments/collection-result-comment"
 import { CopyToClipboard } from "../../components/common/copy-to-clipboard"
 import { TransactionInfo } from "../../components/common/transaction-info"
+import { UnsupportedBlockchainWarning } from "../../components/common/unsupported-blockchain-warning"
 
 function getDeployRequest(data: Record<string, any>) {
 	switch (data["blockchain"]) {
@@ -54,15 +54,26 @@ function getDeployRequest(data: Record<string, any>) {
 	}
 }
 
+function validateConditions(blockchain: Blockchain | undefined): boolean {
+	return blockchain === Blockchain.ETHEREUM ||
+		blockchain === Blockchain.POLYGON ||
+		blockchain === Blockchain.TEZOS
+}
 
 export function DeployPage() {
 	const connection = useContext(ConnectorContext)
 	const form = useForm()
 	const { handleSubmit } = form
 	const { result, setComplete, setError } = useRequestResult()
+	const blockchain = connection.sdk?.wallet?.blockchain
 
 	return (
 		<Page header="Deploy Collection">
+			{
+				!validateConditions(blockchain) && <CommentedBlock sx={{ my: 2 }}>
+                    <UnsupportedBlockchainWarning blockchain={blockchain}/>
+                </CommentedBlock>
+			}
 			<CommentedBlock sx={{ my: 2 }} comment={<CollectionDeployComment/>}>
 				<form onSubmit={handleSubmit(async (formData) => {
 					try {
@@ -73,10 +84,16 @@ export function DeployPage() {
 				})}
 				>
 					<Stack spacing={2}>
-						<FormSelect form={form} defaultValue={Blockchain.ETHEREUM} name="blockchain" label="Blockchain">
+						<FormSelect
+							form={form}
+							defaultValue={blockchain ?? Blockchain.ETHEREUM}
+							name="blockchain"
+							label="Blockchain"
+						>
 							<MenuItem value={Blockchain.ETHEREUM}>{Blockchain.ETHEREUM}</MenuItem>
 							<MenuItem value={Blockchain.POLYGON}>{Blockchain.POLYGON}</MenuItem>
 							<MenuItem value={Blockchain.TEZOS}>{Blockchain.TEZOS}</MenuItem>
+							<MenuItem value={Blockchain.FLOW}>{Blockchain.FLOW}</MenuItem>
 						</FormSelect>
 						<FormTextInput form={form} name="name" label="Name"/>
 						<FormTextInput form={form} name="symbol" label="Symbol"/>
@@ -84,7 +101,12 @@ export function DeployPage() {
 						<FormTextInput form={form} name="contractURI" label="Contract URI"/>
 						<FormCheckbox form={form} name="private" label="Private Collection"/>
 						<Box>
-							<FormSubmit form={form} label="Deploy" state={resultToState(result.type)}/>
+							<FormSubmit
+								form={form}
+								label="Deploy"
+								state={resultToState(result.type)}
+								disabled={!validateConditions(blockchain)}
+							/>
 						</Box>
 					</Stack>
 				</form>
@@ -98,11 +120,11 @@ export function DeployPage() {
 							<Box sx={{ my: 2 }}>
 								<Typography variant="overline">Collection Address:</Typography>
 								<div>
-									<InlineCode>{data.address}</InlineCode> <CopyToClipboard value={data.address}/>
+									<InlineCode>{data?.address}</InlineCode> <CopyToClipboard value={data?.address}/>
 								</div>
 							</Box>
 							<Box sx={{ my: 2 }}>
-								<TransactionInfo transaction={data.tx}/>
+								<TransactionInfo transaction={data?.tx}/>
 							</Box>
 						</>
 					}

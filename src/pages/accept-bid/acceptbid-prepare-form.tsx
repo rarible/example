@@ -1,8 +1,8 @@
 import React, { useContext } from "react"
 import { Box, Stack } from "@mui/material"
 import { useForm } from "react-hook-form"
-import { toItemId } from "@rarible/types"
-import { PrepareOrderResponse } from "@rarible/sdk/build/types/order/common"
+import { PrepareFillResponse } from "@rarible/sdk/build/types/order/fill/domain"
+import { toOrderId } from "@rarible/types"
 import { faChevronRight } from "@fortawesome/free-solid-svg-icons"
 import { FormTextInput } from "../../components/common/form/form-text-input"
 import { FormSubmit } from "../../components/common/form/form-submit"
@@ -10,12 +10,12 @@ import { resultToState, useRequestResult } from "../../components/hooks/use-requ
 import { ConnectorContext } from "../../components/connector/sdk-connection-provider"
 import { RequestResult } from "../../components/common/request-result"
 
-interface ISellPrepareFormProps {
-	onComplete: (response: PrepareOrderResponse) => void
+interface IAcceptBidPrepareFormProps {
 	disabled?: boolean
+	onComplete: (response: PrepareFillResponse) => void
 }
 
-export function SellPrepareForm({ disabled, onComplete }: ISellPrepareFormProps) {
+export function AcceptBidPrepareForm({ disabled, onComplete }: IAcceptBidPrepareFormProps) {
 	const connection = useContext(ConnectorContext)
 	const form = useForm()
 	const { handleSubmit } = form
@@ -28,8 +28,8 @@ export function SellPrepareForm({ disabled, onComplete }: ISellPrepareFormProps)
 					return
 				}
 				try {
-					onComplete(await connection.sdk.order.sell({
-						itemId: toItemId(formData.itemId)
+					onComplete(await connection.sdk.order.buy({
+						orderId: toOrderId(formData.orderId)
 					}))
 				} catch (e) {
 					setError(e)
@@ -37,7 +37,7 @@ export function SellPrepareForm({ disabled, onComplete }: ISellPrepareFormProps)
 			})}
 			>
 				<Stack spacing={2}>
-					<FormTextInput form={form} name="itemId" label="Item ID"/>
+					<FormTextInput form={form} name="orderId" label="Order ID"/>
 					<Box>
 						<FormSubmit
 							form={form}

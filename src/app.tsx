@@ -12,6 +12,8 @@ import { DeployPage } from "./pages/deploy/deploy-page"
 import { SellPage } from "./pages/sell/sell-page"
 import { BuyPage } from "./pages/buy/buy-page"
 import { MintPage } from "./pages/mint/mint-page"
+import { BidPage } from "./pages/bid/bid-page"
+import { AcceptBidPage } from "./pages/accept-bid/acceptbid-page"
 
 export function App() {
 	return (
@@ -36,6 +38,8 @@ export function App() {
 							<Route path="mint" element={<MintPage/>}/>
 							<Route path="sell" element={<SellPage/>}/>
 							<Route path="buy" element={<BuyPage/>}/>
+							<Route path="bid" element={<BidPage/>}/>
+							<Route path="accept-bid" element={<AcceptBidPage/>}/>
 							<Route path="*" element={<NotFoundPage/>}/>
 						</Routes>
 					</Box>

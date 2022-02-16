@@ -5,28 +5,30 @@ import { Box, Chip, CircularProgress, Typography } from "@mui/material"
 import { faCheckDouble, faTimes } from "@fortawesome/free-solid-svg-icons"
 import { Icon } from "./icon"
 
+interface ITransactionInfoProps {
+	transaction: IBlockchainTransaction
+}
 
-
-export function TransactionPending({ transaction }: ITransactionInfoProps<any>) {
+export function TransactionPending({ transaction }: ITransactionInfoProps) {
 	const [state, setState] = useState<"resolve" | "reject" | "pending">("pending")
 	useEffect( () => {
 		transaction.wait()
 			.then(() => setState("resolve"))
 			.catch(() => setState("reject"))
-	}, [])
+	}, [transaction])
 
 	return <Box sx={{ my: 1 }}>
 		<>
-			{ state === "pending" && <><CircularProgress size={14}/> Pending</> }
+			{ state === "pending" && <><CircularProgress size={14}/> Processing</> }
 			{ state === "resolve" && <Chip
-				label="completed"
+				label="Confirmed"
 				icon={<Icon icon={faCheckDouble}/>}
 				variant="outlined"
 				color="success"
 				size="small"
 			/> }
 			{ state === "reject" && <Chip
-				label="rejected"
+				label="Rejected"
                 icon={<Icon icon={faTimes}/>}
                 variant="outlined"
                 color="error"
@@ -36,11 +38,7 @@ export function TransactionPending({ transaction }: ITransactionInfoProps<any>) 
 	</Box>
 }
 
-interface ITransactionInfoProps<T> {
-	transaction: IBlockchainTransaction
-}
-
-export function TransactionInfo({ transaction }: ITransactionInfoProps<any>) {
+export function TransactionInfo({ transaction }: ITransactionInfoProps) {
 	return <>
 		<Typography variant="overline">Transaction:</Typography>
 		<TransactionPending transaction={transaction}/>

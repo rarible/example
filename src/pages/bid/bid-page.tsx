@@ -1,39 +1,40 @@
 import React, { useContext } from "react"
-import { Box } from "@mui/material"
-import { Blockchain } from "@rarible/api-client"
+import { Box, Typography } from "@mui/material"
 import { Page } from "../../components/page"
 import { CommentedBlock } from "../../components/common/commented-block"
 import { FormStepper } from "../../components/common/form-stepper"
 import { RequestResult } from "../../components/common/request-result"
-import { BuyPrepareForm } from "./buy-prepare-form"
-import { BuyForm } from "./buy-form"
-import { BuyComment } from "./comments/buy-comment"
-import { TransactionInfo } from "../../components/common/transaction-info"
+import { InlineCode } from "../../components/common/inline-code"
+import { CopyToClipboard } from "../../components/common/copy-to-clipboard"
+import { BidPrepareForm } from "./bid-prepare-form"
+import { BidForm } from "./bid-form"
+import { BidComment } from "./comments/bid-comment"
 import { UnsupportedBlockchainWarning } from "../../components/common/unsupported-blockchain-warning"
+import { Blockchain } from "@rarible/api-client"
 import { ConnectorContext } from "../../components/connector/sdk-connection-provider"
 
 function validateConditions(blockchain: Blockchain | undefined): boolean {
 	return !!blockchain
 }
 
-export function BuyPage() {
+export function BidPage() {
 	const connection = useContext(ConnectorContext)
 	const blockchain = connection.sdk?.wallet?.blockchain
 
 	return (
-		<Page header="Buy Token">
+		<Page header="Make Bid">
 			{
 				!validateConditions(blockchain) && <CommentedBlock sx={{ my: 2 }}>
                     <UnsupportedBlockchainWarning blockchain={blockchain}/>
                 </CommentedBlock>
 			}
-			<CommentedBlock sx={{ my: 2 }} comment={<BuyComment/>}>
+			<CommentedBlock sx={{ my: 2 }} comment={<BidComment/>}>
 				<FormStepper
 					steps={[
 						{
-							label: "Get Order Info",
+							label: "Get Item Info",
 							render: (onComplete) => {
-								return <BuyPrepareForm
+								return <BidPrepareForm
 									onComplete={onComplete}
 									disabled={!validateConditions(blockchain)}
 								/>
@@ -42,7 +43,7 @@ export function BuyPage() {
 						{
 							label: "Send Transaction",
 							render: (onComplete, lastResponse) => {
-								return <BuyForm
+								return <BidForm
 									onComplete={onComplete}
 									prepare={lastResponse}
 									disabled={!validateConditions(blockchain)}
@@ -55,9 +56,14 @@ export function BuyPage() {
 								return <RequestResult
 									result={{ type: "complete", data: lastResponse }}
 									completeRender={(data) =>
-										<Box sx={{ my: 2 }}>
-											<TransactionInfo transaction={data}/>
-										</Box>
+										<>
+											<Box sx={{ my: 2 }}>
+												<Typography variant="overline">Order ID:</Typography>
+												<div>
+													<InlineCode wrap>{data}</InlineCode> <CopyToClipboard value={data}/>
+												</div>
+											</Box>
+										</>
 									}
 								/>
 							}

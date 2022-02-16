@@ -5,9 +5,9 @@ import { Page } from "../../components/page"
 import { CommentedBlock } from "../../components/common/commented-block"
 import { FormStepper } from "../../components/common/form-stepper"
 import { RequestResult } from "../../components/common/request-result"
-import { BuyPrepareForm } from "./buy-prepare-form"
-import { BuyForm } from "./buy-form"
-import { BuyComment } from "./comments/buy-comment"
+import { AcceptBidPrepareForm } from "./acceptbid-prepare-form"
+import { AcceptBidForm } from "./acceptbid-form"
+import { AcceptBidComment } from "./comments/accepbid-comment"
 import { TransactionInfo } from "../../components/common/transaction-info"
 import { UnsupportedBlockchainWarning } from "../../components/common/unsupported-blockchain-warning"
 import { ConnectorContext } from "../../components/connector/sdk-connection-provider"
@@ -16,24 +16,24 @@ function validateConditions(blockchain: Blockchain | undefined): boolean {
 	return !!blockchain
 }
 
-export function BuyPage() {
+export function AcceptBidPage() {
 	const connection = useContext(ConnectorContext)
 	const blockchain = connection.sdk?.wallet?.blockchain
 
 	return (
-		<Page header="Buy Token">
+		<Page header="Accept Bid">
 			{
 				!validateConditions(blockchain) && <CommentedBlock sx={{ my: 2 }}>
                     <UnsupportedBlockchainWarning blockchain={blockchain}/>
                 </CommentedBlock>
 			}
-			<CommentedBlock sx={{ my: 2 }} comment={<BuyComment/>}>
+			<CommentedBlock sx={{ my: 2 }} comment={<AcceptBidComment/>}>
 				<FormStepper
 					steps={[
 						{
 							label: "Get Order Info",
 							render: (onComplete) => {
-								return <BuyPrepareForm
+								return <AcceptBidPrepareForm
 									onComplete={onComplete}
 									disabled={!validateConditions(blockchain)}
 								/>
@@ -42,7 +42,7 @@ export function BuyPage() {
 						{
 							label: "Send Transaction",
 							render: (onComplete, lastResponse) => {
-								return <BuyForm
+								return <AcceptBidForm
 									onComplete={onComplete}
 									prepare={lastResponse}
 									disabled={!validateConditions(blockchain)}

@@ -20,7 +20,7 @@ const sell = await connection.sdk.order.sell({
 // send transaction
 const result = await sell.submit({
   price: 2,
-  currency: {"@type": "ETH"}
+  currency: {"@type": "ETH"},
   amount: 1,
 })
 // result: string - order id
