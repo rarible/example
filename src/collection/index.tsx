@@ -2,10 +2,10 @@ import { IRaribleSdk } from "@rarible/sdk/build/domain"
 import React, { useCallback } from "react"
 import { FormWithResult } from "../common/form-with-result"
 import { CollectionDeployForm } from "./collection-deploy-form";
-import { DeployTokenRequest } from "@rarible/sdk/build/types/nft/deploy/domain";
+import { CreateCollectionRequest } from "@rarible/sdk/build/types/nft/deploy/domain";
 
 export function Collection({ sdk }: { sdk: IRaribleSdk }) {
-	const prepare = useCallback(async (request: DeployTokenRequest) => {
+	const prepare = useCallback(async (request: CreateCollectionRequest) => {
 		return sdk.nft.deploy(request)
 	}, [sdk])
 

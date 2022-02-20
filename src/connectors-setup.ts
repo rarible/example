@@ -16,6 +16,7 @@ import { BeaconConnectionProvider, TezosProviderConnectionResult } from "@raribl
 import { TorusConnectionProvider } from "@rarible/connector-torus"
 import { WalletLinkConnectionProvider } from "@rarible/connector-walletlink"
 import { WalletConnectConnectionProvider } from "@rarible/connector-walletconnect"
+import { Registry, withBiconomyMiddleware } from "@rarible/biconomy-middleware"
 // import { FortmaticConnectionProvider } from "@rarible/connector-fortmatic"
 // import { PortisConnectionProvider } from "@rarible/connector-portis"
 
@@ -32,9 +33,18 @@ export type WalletAndAddress = {
 	address: string
 }
 
+const registry = new Registry("https://biconomy.rarible.com/mumbai.json")
+
+function withBiconomy(provider: any): any {
+	return withBiconomyMiddleware(provider, registry, {
+		apiKey: "XlCG1WlTiK.6a5ed814-fe86-4b3b-af26-ee1eefc168e5",
+		debug: true,
+	})
+}
+
 function mapEthereumWallet<O>(provider: AbstractConnectionProvider<O, EthereumProviderConnectionResult>): ConnectionProvider<O, WalletAndAddress> {
 	return provider.map(state => ({
-		wallet: new EthereumWallet(new Web3Ethereum({ web3: new Web3(state.provider), from: state.address })),
+		wallet: new EthereumWallet(new Web3Ethereum({ web3: new Web3(withBiconomy(state.provider)), from: state.address })),
 		address: state.address
 	}))
 }

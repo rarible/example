@@ -37,7 +37,10 @@ export function OrderForm({ currency, onSubmit, response }: SellFormProps) {
 				onClick={() => onSubmit({
 					amount: parseInt(amount),
 					price: toBigNumber(price),
-					currency: currency === "ETH" ? ethCurrency : erc20Currency,
+					currency: {
+						"@type": "ERC20",
+						contract: toContractAddress("POLYGON:0x9c3c9283d3e44854697cd22d3faa240cfb032889")
+					},
 				})}
 				disabled={error !== undefined}
 			>Submit</button>

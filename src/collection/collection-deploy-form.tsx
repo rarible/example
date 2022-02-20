@@ -1,10 +1,10 @@
 import { useState } from "react"
 import { Input } from "../common/input"
 import { FormProps } from "../common/form-props"
-import { DeploySupportedBlockchains, DeployTokenRequest } from "@rarible/sdk/build/types/nft/deploy/domain";
+import { CreateCollectionBlockchains, CreateCollectionRequest } from "@rarible/sdk/build/types/nft/deploy/domain";
 import {Blockchain} from "@rarible/api-client";
 
-type CollectionDeployFormProps = FormProps<DeployTokenRequest>;
+type CollectionDeployFormProps = FormProps<CreateCollectionRequest>;
 
 export function CollectionDeployForm({ onSubmit }: CollectionDeployFormProps) {
 	const [blockchain, setBlockchain] = useState(Blockchain.ETHEREUM)
@@ -13,12 +13,12 @@ export function CollectionDeployForm({ onSubmit }: CollectionDeployFormProps) {
 	const [baseURI, setBaseURI] = useState("http://example.com")
 	const [contractURI, setContractURI] = useState("http://example.com")
 
-	const getRequest: () => DeployTokenRequest = () => {
+	const getRequest: () => CreateCollectionRequest = () => {
 		switch (blockchain) {
 			case Blockchain.POLYGON:
 			case Blockchain.ETHEREUM:
 				return {
-					blockchain: blockchain as DeploySupportedBlockchains,
+					blockchain: blockchain as CreateCollectionBlockchains,
 					asset: {
 						assetType: "ERC721",
 						arguments: {
@@ -32,7 +32,7 @@ export function CollectionDeployForm({ onSubmit }: CollectionDeployFormProps) {
 				}
 			case Blockchain.TEZOS:
 				return {
-					blockchain: Blockchain.TEZOS as DeploySupportedBlockchains,
+					blockchain: Blockchain.TEZOS as CreateCollectionBlockchains,
 					asset: {
 						assetType: "NFT",
 						arguments: {
