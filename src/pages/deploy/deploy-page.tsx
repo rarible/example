@@ -2,7 +2,7 @@ import React, { useContext } from "react"
 import { Box, MenuItem, Stack, Typography } from "@mui/material"
 import { useForm } from "react-hook-form"
 import { Blockchain } from "@rarible/api-client"
-import { DeploySupportedBlockchains, DeployTokenRequest } from "@rarible/sdk/build/types/nft/deploy/domain"
+import { CreateCollectionBlockchains, CreateCollectionRequest } from "@rarible/sdk/build/types/nft/deploy/domain"
 import { Page } from "../../components/page"
 import { CommentedBlock } from "../../components/common/commented-block"
 import { FormTextInput } from "../../components/common/form/form-text-input"
@@ -24,7 +24,7 @@ function getDeployRequest(data: Record<string, any>) {
 		case Blockchain.POLYGON:
 		case Blockchain.ETHEREUM:
 			return {
-				blockchain: data["blockchain"] as DeploySupportedBlockchains,
+				blockchain: data["blockchain"] as CreateCollectionBlockchains,
 				asset: {
 					assetType: "ERC721",
 					arguments: {
@@ -35,10 +35,10 @@ function getDeployRequest(data: Record<string, any>) {
 						isUserToken: false
 					}
 				}
-			} as DeployTokenRequest
+			} as CreateCollectionRequest
 		case Blockchain.TEZOS:
 			return {
-				blockchain: data["blockchain"] as DeploySupportedBlockchains,
+				blockchain: data["blockchain"] as CreateCollectionBlockchains,
 				asset: {
 					assetType: "NFT",
 					arguments: {
@@ -48,7 +48,7 @@ function getDeployRequest(data: Record<string, any>) {
 						isUserToken: false,
 					},
 				},
-			} as DeployTokenRequest
+			} as CreateCollectionRequest
 		default:
 			throw new Error("Unsupported blockchain")
 	}

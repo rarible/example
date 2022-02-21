@@ -1,15 +1,11 @@
-import React from "react"
+import React, { useContext } from "react"
 import { useRxOrThrow } from "@rixio/react"
 import { createRaribleSdk } from "@rarible/sdk"
-import type { ConnectionState, IConnector } from "@rarible/connector"
-import { getStateDisconnected } from "@rarible/connector"
+import type { ConnectionState } from "@rarible/connector"
+import { IConnector, getStateDisconnected, Connector } from "@rarible/connector"
 import { IRaribleSdk } from "@rarible/sdk/build/domain"
-import { BlockchainWallet } from "@rarible/sdk-wallet"
-
-export interface IWalletAndAddress {
-	wallet: BlockchainWallet
-	address: string
-}
+import { EnvironmentContext } from "./environment-selector-provider"
+import { IWalletAndAddress } from "./wallet-connetion"
 
 export interface IConnectorContext {
 	connector?: IConnector<string, IWalletAndAddress>
@@ -22,17 +18,17 @@ export const ConnectorContext = React.createContext<IConnectorContext>({
 	connector: undefined,
 	state: getStateDisconnected(),
 	sdk: undefined,
-	walletAddress: undefined,
+	walletAddress: undefined
 })
 
-export interface IConnectorComponentProps {
-	connector: IConnector<string, IWalletAndAddress>
+export interface ISdkConnectionProviderProps {
+	connector: Connector<string, IWalletAndAddress>
 }
 
-export function SdkConnectionProvider({ connector, children }: React.PropsWithChildren<IConnectorComponentProps>) {
+export function SdkConnectionProvider({ connector, children }: React.PropsWithChildren<ISdkConnectionProviderProps>) {
+	const {environment} = useContext(EnvironmentContext)
 	const conn = useRxOrThrow(connector.connection)
-
-	const sdk = conn.status === "connected" ? createRaribleSdk(conn.connection.wallet, "staging") : undefined
+	const sdk = conn.status === "connected" ? createRaribleSdk(conn.connection.wallet, environment) : undefined
 
 	const context: IConnectorContext = {
 		connector,

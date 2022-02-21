@@ -1,12 +1,15 @@
-import React, { useContext, useMemo } from "react"
+import React, { useCallback, useContext, useMemo } from "react"
 import { from } from "rxjs"
 import { Rx } from "@rixio/react"
 import { LoadingButton } from "@mui/lab"
-import { Box, Button, Stack } from "@mui/material"
+import { Box, Button, MenuItem, Stack, TextField } from "@mui/material"
 import { faChevronRight, faLinkSlash } from "@fortawesome/free-solid-svg-icons"
+import { StateConnected } from "@rarible/connector/build/connection-state"
+import { RaribleSdkEnvironment } from "@rarible/sdk/build/config/domain"
 import { ConnectorContext } from "../../components/connector/sdk-connection-provider"
 import { Icon } from "../../components/common/icon"
-import { StateConnected } from "@rarible/connector/build/connection-state"
+import { EnvironmentContext } from "../../components/connector/environment-selector-provider"
+import { ENVIRONMENTS } from "../../components/connector/environments"
 
 function getWalletInfo(option: string): { label: string } {
 	switch (option) {
@@ -20,10 +23,14 @@ function getWalletInfo(option: string): { label: string } {
 }
 
 export function ConnectOptions() {
+	const { environment, setEnvironment } = useContext(EnvironmentContext)
 	const connection = useContext(ConnectorContext)
 	const { connector, state } = connection
 
 	const options$ = useMemo(() => connector ? from(connector.getOptions()) : from([]), [connector])
+	const envSelectHandler = useCallback((e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+		setEnvironment?.(e.target.value as RaribleSdkEnvironment)
+	}, [setEnvironment])
 
 	if (!connector) {
 		return null
@@ -44,6 +51,20 @@ export function ConnectOptions() {
 		<Rx value$={options$}>
 			{options => (
 				<Stack spacing={1}>
+					<TextField
+						select
+						size="small"
+						label="Environment"
+						disabled={state?.status === "connected"}
+						value={environment}
+						onChange={envSelectHandler}
+					>
+						{ENVIRONMENTS.map((option) => (
+							<MenuItem key={option.value} value={option.value}>
+								{option.label}
+							</MenuItem>
+						))}
+					</TextField>
 					{
 						options.map(o => {
 							const walletInfo = getWalletInfo(o.option)
