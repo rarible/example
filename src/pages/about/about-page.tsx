@@ -1,6 +1,7 @@
 import React from "react"
 import { Page } from "../../components/page"
 import { InlineCode } from "../../components/common/inline-code"
+import { Link } from "@mui/material"
 
 export function AboutPage() {
   return (
@@ -16,11 +17,11 @@ export function AboutPage() {
           </ul>
           This example uses:
           <ul>
-              <li><InlineCode>@rarible/sdk</InlineCode> — <a href="https://github.com/rarible/sdk">Rarible Protocol SDK</a></li>
-              <li><InlineCode>@rarible/connector</InlineCode> — <a href="https://github.com/rarible/sdk/tree/master/packages/connector">Rarible SDK Wallet Connector</a></li>
-              <li><InlineCode>@rixio/react</InlineCode> — <a href="https://github.com/roborox/rixio">Rixio</a></li>
+              <li><InlineCode>@rarible/sdk</InlineCode> — <Link href="https://github.com/rarible/sdk" target="_blank">Rarible Protocol SDK</Link></li>
+              <li><InlineCode>@rarible/connector</InlineCode> — <Link href="https://github.com/rarible/sdk/tree/master/packages/connector" target="_blank">Rarible SDK Wallet Connector</Link></li>
+              <li><InlineCode>@rixio/react</InlineCode> — <Link href="https://github.com/roborox/rixio" target="_blank">Rixio</Link></li>
           </ul>
-          See more information about SDK usage in <a href="https://docs.rarible.org/">Protocol documentation</a>.
+          See more information about SDK usage in <Link href="https://docs.rarible.org/" target="_blank">Protocol documentation</Link>.
       </Page>
   );
 }

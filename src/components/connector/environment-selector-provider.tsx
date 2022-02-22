@@ -6,7 +6,7 @@ import { getConnector } from "./connectors-setup"
 
 export interface IEnvironmentContext {
 	environment: RaribleSdkEnvironment
-	setEnvironment?: ((env: RaribleSdkEnvironment) => void),
+	setEnvironment?: (env: RaribleSdkEnvironment) => void,
 }
 
 export const EnvironmentContext = React.createContext<IEnvironmentContext>({
@@ -18,13 +18,24 @@ export interface IConnectorComponentProps {
 	children: (connector: Connector<string, IWalletAndAddress>) => React.ReactNode
 }
 
+const LOCALSTORAGE_KEY = "saved_environment"
+
+function getSavedEnvironment(): RaribleSdkEnvironment {
+	const envs = ["dev", "e2e", "staging", "prod"]
+	const saved = localStorage.getItem(LOCALSTORAGE_KEY)
+	return saved && envs.includes(saved) ? saved as RaribleSdkEnvironment : "staging"
+}
+
 export function EnvironmentSelectorProvider({ children }: React.PropsWithChildren<IConnectorComponentProps>) {
-	const [environment, setEnvironment] = useState<RaribleSdkEnvironment>("staging")
+	const [environment, setEnvironment] = useState<RaribleSdkEnvironment>(getSavedEnvironment())
 	const connector = getConnector(environment)
 
 	const context: IEnvironmentContext = {
 		environment,
-		setEnvironment
+		setEnvironment: (env: RaribleSdkEnvironment) => {
+			localStorage.setItem(LOCALSTORAGE_KEY, env)
+			setEnvironment(env)
+		}
 	}
 
 	return <EnvironmentContext.Provider value={context}>
