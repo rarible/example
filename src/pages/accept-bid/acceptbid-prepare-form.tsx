@@ -28,7 +28,7 @@ export function AcceptBidPrepareForm({ disabled, onComplete }: IAcceptBidPrepare
 					return
 				}
 				try {
-					onComplete(await connection.sdk.order.buy({
+					onComplete(await connection.sdk.order.acceptBid({
 						orderId: toOrderId(formData.orderId)
 					}))
 				} catch (e) {
