@@ -1,15 +1,15 @@
 import { NetworkType as TezosNetwork } from "@airgap/beacon-sdk"
-import { FlowWallet, TezosWallet, EthereumWallet } from "@rarible/sdk-wallet"
+import { EthereumWallet, FlowWallet, TezosWallet } from "@rarible/sdk-wallet"
 import { RaribleSdkEnvironment } from "@rarible/sdk/build/config/domain"
 import Web3 from "web3"
 import { Web3Ethereum } from "@rarible/web3-ethereum"
 import {
-	Connector,
-	IConnectorStateProvider,
-	ConnectionProvider,
-	InjectedWeb3ConnectionProvider,
 	AbstractConnectionProvider,
+	ConnectionProvider,
+	Connector,
 	EthereumProviderConnectionResult,
+	IConnectorStateProvider,
+	InjectedWeb3ConnectionProvider,
 } from "@rarible/connector"
 import { FclConnectionProvider, FlowProviderConnectionResult } from "@rarible/connector-fcl"
 import { MEWConnectionProvider } from "@rarible/connector-mew"
@@ -18,6 +18,7 @@ import { TorusConnectionProvider } from "@rarible/connector-torus"
 import { WalletLinkConnectionProvider } from "@rarible/connector-walletlink"
 import { WalletConnectConnectionProvider } from "@rarible/connector-walletconnect"
 import type { IWalletAndAddress } from "./wallet-connetion"
+import { Blockchain } from "@rarible/api-client"
 // import { FortmaticConnectionProvider } from "@rarible/connector-fortmatic"
 // import { PortisConnectionProvider } from "@rarible/connector-portis"
 
@@ -93,14 +94,23 @@ function environmentToTezosNetwork(environment: RaribleSdkEnvironment) {
 }
 
 function mapEthereumWallet<O>(provider: AbstractConnectionProvider<O, EthereumProviderConnectionResult>): ConnectionProvider<O, IWalletAndAddress> {
-	//todo: set correct blockchain polygon/ethereum
 	return provider.map(state => ({
 		wallet: new EthereumWallet(
 			new Web3Ethereum({ web3: new Web3(state.provider), from: state.address }),
-
+			getEvmBlockchain(state.chainId)
 		),
 		address: state.address
 	}))
+}
+
+function getEvmBlockchain(chainId: number): Blockchain.POLYGON | Blockchain.ETHEREUM {
+	switch (chainId) {
+		case 137: return Blockchain.POLYGON
+		case 80001: return Blockchain.POLYGON
+		case 300501: return Blockchain.POLYGON
+		case 200501: return Blockchain.POLYGON
+		default: return Blockchain.ETHEREUM
+	}
 }
 
 function mapFlowWallet<O>(provider: AbstractConnectionProvider<O, FlowProviderConnectionResult>): ConnectionProvider<O, IWalletAndAddress> {

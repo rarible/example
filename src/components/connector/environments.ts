@@ -6,6 +6,9 @@ export const ENVIRONMENTS = [{
 	label: "Staging"
 }, {
 	value: "dev",
+	label: "Dev"
+}, {
+	value: "development",
 	label: "Development"
 }, {
 	value: "e2e",
