@@ -10,7 +10,7 @@ export interface IEnvironmentContext {
 }
 
 export const EnvironmentContext = React.createContext<IEnvironmentContext>({
-	environment: "staging",
+	environment: "prod",
 	setEnvironment: undefined
 })
 
