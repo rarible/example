@@ -1,5 +1,7 @@
 # Rarible Protocol Union React Example
 
+Example moved to [SDK repo](https://github.com/rarible/sdk/tree/master/packages/example)
+
 What we have done in this example:
 
 - Create Lazy Minting NFT item
