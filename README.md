@@ -9,11 +9,11 @@ What we have done in this example:
 - Create Bid
 - Purchase (buy item) an order
 
-See Rarible Protocol documentation for more information about [tokens](https://docs.rarible.org/ethereum/smart-contracts/tokens/#tokens) and [smart contracts](https://docs.rarible.org/ethereum/smart-contracts/smart-contracts/).
-
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 In this example we're using [Metamask](https://metamask.io/) wallet to interact with ethereum blockchain.
+
+You can find detailed documentation at [docs.rarible.org](https://docs.rarible.org).
 
 ## Install
 
@@ -79,6 +79,12 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 ## Suggestions
 
 You are welcome to [suggest features](https://github.com/rarible/protocol/discussions) and [report bugs found](https://github.com/rarible/protocol/issues)!
+
+## Contributing
+
+The codebase is maintained using the "contributor workflow" where everyone without exception contributes patch proposals using "pull requests" (PRs). This facilitates social contribution, easy testing, and peer review.
+
+See more information on [CONTRIBUTING.md](https://github.com/rarible/protocol/blob/main/CONTRIBUTING.md).
 
 ## License
 
